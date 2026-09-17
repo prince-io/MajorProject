@@ -18,8 +18,9 @@ study** of augmentation/domain-adaptation strategies — transform clear BDD int
 adverse-weather BDD, train one detector per strategy, and score all of them per weather on
 real ACDC, with **S1 (Ultralytics defaults) as the anchor**. The previous method directions
 (SM-WCFA, global Fourier Domain Adaptation [Yang & Soatto, CVPR 2020], Direction A / WSM,
-spectral analysis) were removed in the 2026-09-17 baseline-only reset. **No code or
-experiments have been run since; implementation is the next phase.**
+spectral analysis) were removed in the 2026-09-17 baseline-only reset. **S0/S1/T1/T1aug are
+locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690);
+S3 is the next stage.**
 
 ---
 
@@ -61,7 +62,7 @@ experiments have been run since; implementation is the next phase.**
 - **Synthesis implementation:** **offline** pre-generated datasets; S4 FDA stays online.
 - **Leakage control:** 400-image ACDC **design split**; official val scored once.
 - **S5:** physics-structured synthesis **calibrated to measured ACDC-train statistics**.
-- **S4 β:** **{0.05, 0.10}** only.
+- **S4 β:** **{0.05, 0.10}** (provisional — decide when S4 is built; review suggests restoring 0.01).
 - **Experiment grouping:** `--exp <ID>` → `results/experiments/<ID>/{train,eval,figures}`;
   `aggregate.py`/`visualize.py` scan the experiment tree.
 
@@ -82,16 +83,16 @@ experiments have been run since; implementation is the next phase.**
 - `data/yolo/acdc` — 2,006 images / 2,006 labels (0 orphans).
 - `data/yolo/bdd_s2` — 5,000 degraded B images / 5,000 labels (S2); the 5,000 clear A images are referenced from `bdd_src` (not copied). Manifest `splits/bdd_s2_train.txt`, config `configs/bdd_s2.yaml`.
 - `splits/` — manifests are the source of truth for every split: `bdd_src_{train,val}`, `acdc_cv5/fold0..4`, `acdc_official_{train,val}` (1,600/406), `acdc_design` (400 = 100/weather), `acdc_pool_unlabeled` (1,200 = 300/weather), `acdc_perweather/*`.
-- `configs/` — baseline Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`).
+- `configs/` — Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`, `bdd_s2`).
 
 ### Pipeline order
 ```
 convert_acdc.py → convert_bdd.py → build_splits.py → write_configs.py →
-materialize.py → prune_labels.py → train.py --exp → eval.py --exp →
-aggregate.py → visualize.py
+materialize.py → prune_labels.py → synth/build_dataset.py --stage <s> →
+train.py --exp → eval.py --exp → aggregate.py → visualize.py
 ```
-The study adds an offline synthesis step (`src/synth/build_dataset.py`, planned) between
-split building and training.
+`src/synth/build_dataset.py` generates each stage's offline dataset (implemented for S2;
+S3/S5/S6 add stage modules). S4 is online and skips this step.
 
 ---
 
@@ -128,7 +129,7 @@ training data/augmentation changes.
 |---|---|---|---|
 | S0 | clear BDD, no aug | floor | done |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | done |
-| S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **implemented** |
+| S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **done** (0.2833) |
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | planned |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated physics synthesis (offline) | principled weather sim | planned |
@@ -186,7 +187,7 @@ scorer and is scored once per stage.
   mAP@50-95 0.1650 vs 0.1559 (+0.0091); 5-fold +0.0070 (within ±1.4–1.6 spread); in-domain
   unchanged (0.491→0.492). Gains in **rain + rare classes**; fog/night/snow flat. Paper
   write-up: `paper/results_notes.md`. **Next: S3 (simple weather).**
-- **Nothing implemented yet.** `src/synth/` and `src/aug/fda.py` are planned, not written.
+- **S3 and the S4 FDA hook are not written yet.** `src/synth/` currently implements S2; `src/aug/fda.py` is planned. S3 is next.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -195,7 +196,7 @@ scorer and is scored once per stage.
   It rebuilds the deleted prior-work notes and flags the old "MIC"/"ViSGA" tags as unverified.
 - **`PLAN.md` (root)** is the raw peer-review conversation; `PROJECT.md` is authoritative
   where they differ (notably: ACDC test has **no GT**, so official val is the scorer).
-- **`T1`/`T1aug` naming and the S4 β list ({0.05, 0.10}) are locked.**
+- **`T1`/`T1aug` naming is locked**; **S4 β is provisional** (see §3 and §12).
 - **Deferred cleanup (intentionally left as-is):** `PLAN.md`; `splits/acdc_perweather/*`
   (currently unused); `data/yolo/**/*.cache` (Ultralytics speed caches).
   `Mini_Project_G-1_Final.pdf` and `yolov8n.pt` are kept reference material.
@@ -238,7 +239,7 @@ python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
 python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
   --epochs 80 --batch 32 --seed 42 --aug default --exp S1
 
-# --- S2 (built 2026-09-17; training is the next step) ---
+# --- S2 (DONE 2026-09-17: official mAP@50 0.2833 vs S1 0.2690) ---
 python src/synth/build_dataset.py --stage s2 --jobs 8      # regenerate dataset
 python src/synth/inspect_s2.py --dataset-name bdd_s2       # validate + preview
 python src/train.py --data configs/bdd_s2.yaml --model yolov8n.pt \
@@ -246,16 +247,13 @@ python src/train.py --data configs/bdd_s2.yaml --model yolov8n.pt \
 python src/eval.py --weights results/experiments/S2/train/weights/best.pt \
   --data configs/acdc_official.yaml --name S2_acdc_official --per-weather --exp S2
 
-# --- Study stages (later) ---
-# S3/S5/S6: same builder, other stage modules; S4: online FDA (trainer hook)
-# S4: online FDA (trainer hook)
+# --- S3 (next): same builder, add src/synth/weather.py and a stage 's3' module ---
+# python src/synth/build_dataset.py --stage s3 --jobs 8 && python src/synth/inspect_s3.py ...
+
+# --- S4: online FDA (trainer hook not written yet) ---
 # python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
 #   --epochs 80 --batch 32 --seed 42 --aug fda --beta 0.05 \
-#   --target-pool splits/acdc_pool_unlabeled.txt --exp S4_fda001
-
-# Evaluate every stage on the official split
-python src/eval.py --weights results/experiments/S2/train/weights/best.pt \
-  --data configs/acdc_official.yaml --name S2_acdc_official --per-weather --exp S2
+#   --target-pool splits/acdc_pool_unlabeled.txt --exp S4
 
 # Aggregate + figures
 python src/aggregate.py && python src/visualize.py
@@ -274,7 +272,7 @@ python src/aggregate.py && python src/visualize.py
 | `AGENTS.md` (root) | DOX rail; user preferences; Child DOX Index. |
 | `src/common.py` | Shared paths/constants. |
 | `src/data/*.py` | Converters, split builder, config writer, materializer, label pruner. |
-| `src/synth/` | (planned) offline S2/S3/S5/S6 synthesis package. |
+| `src/synth/` | Offline S2–S6 synthesis (S2 implemented: `common.py`, `photometric.py`, `build_dataset.py`, `inspect_s2.py`). |
 | `src/aug/` | (planned) S4 FDA online hook. |
 | `src/train.py` | Training wrapper; `--aug {none,default}`, `--exp`. |
 | `src/eval.py` | Overall + per-class + per-weather metrics; `--exp`. |

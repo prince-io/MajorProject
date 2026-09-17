@@ -10,7 +10,7 @@
 > gates** and marked "revised from pre-registered". No stale number, path, or claim is
 > left in place.
 
-- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. No synthesis/method code or new training has run yet; implementation is the next phase.
+- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. **S0/S1/T1/T1aug are locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 is the next stage.**
 - **Last updated:** 2026-09-17 (S0–S6 study documented; baseline-only reset)
 - **Owner:** student
 - **Hardware:** RTX 3050 Laptop, 6 GB VRAM; Python 3.12 `.venv`; PyTorch 2.6.0+cu124; Ultralytics.
@@ -86,7 +86,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 |---|---|---|---|
 | S0 | clear BDD, no aug | floor | **done** |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | **done** |
-| S2 | S1 + generic photometric degradation (offline dataset; blur deferred) | non-weather sensor degradation | **implemented** (dataset built) |
+| S2 | S1 + generic photometric degradation (offline dataset; blur deferred) | non-weather sensor degradation | **done** (mAP@50 0.2833) |
 | S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | planned |
 | S4 | S1 + Fourier Domain Adaptation (online), ACDC-train style (unlabeled) | appearance adaptation | planned (prior global-FDA run failed) |
 | S5 | S1 + physics-structured, ACDC-calibrated synthesis (offline dataset) | principled weather simulation | planned |
