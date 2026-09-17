@@ -181,10 +181,11 @@ scorer and is scored once per stage.
 - **S0–S6 design documented** in `PROJECT.md` §5/§6/§9/§10 and this file. Decisions locked:
   offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 calibrated physics, design
   split, relabel to S/T IDs.
-- **S2 implemented (2026-09-17):** `src/synth/{common,photometric,build_dataset,inspect_s2}.py`;
-  A/B halves recorded; `data/yolo/bdd_s2/` generated (5,000 degraded B + 5,000 referenced
-  clear). Inspector PASS (labels 5000/5000 byte-identical, 0 synthetic==source, 1 already-
-  degenerate source exempt); deterministic; smoke artifacts removed. **Next: train + eval S2.**
+- **S2 implemented + trained (2026-09-17):** `src/synth/` + `data/yolo/bdd_s2/`; inspector
+  PASS; deterministic. **Result (official mAP@50): S2 0.2833 vs S1 0.2690 (+0.0143)**;
+  mAP@50-95 0.1650 vs 0.1559 (+0.0091); 5-fold +0.0070 (within ±1.4–1.6 spread); in-domain
+  unchanged (0.491→0.492). Gains in **rain + rare classes**; fog/night/snow flat. Paper
+  write-up: `paper/results_notes.md`. **Next: S3 (simple weather).**
 - **Nothing implemented yet.** `src/synth/` and `src/aug/fda.py` are planned, not written.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
@@ -213,11 +214,12 @@ scorer and is scored once per stage.
      "MIC"/"ViSGA" tags, and confirm `shapiro2025bridging`/PAGen do not already cover our angle.
 3. ~~**Build S2**~~ — **done 2026-09-17** (`src/synth/` + `data/yolo/bdd_s2/`; inspector PASS,
    determinism verified). Re-run with `python src/synth/build_dataset.py --stage s2 --jobs 8`.
-4. **Train + eval S2 (next):** same command as S1 with `--data configs/bdd_s2.yaml`; eval on ACDC
-   official val per weather/class; inspect failures on the design split (never train/score).
-   **S1 is the exact control (no rerun).**
-5. **Then S3 → S5 → S6a/S6b** (reuse the dataset builder); **S4 FDA online**
-   (`src/aug/fda.py` + trainer hook) — β chosen when we reach S4.
+4. ~~**Train + eval S2**~~ — **done 2026-09-17** (official mAP@50 0.2833 vs S1 0.2690;
+   findings in `PROJECT.md` §9 and `paper/results_notes.md`).
+5. **S3 (next):** simple weather synthesis — add `src/synth/weather.py`, extend
+   `build_dataset.py` for stage `s3` (balanced fog/night/rain/snow 1,250 each), build,
+   inspect, train, eval. Then S5 → S6a/S6b; **S4 FDA** online (`src/aug/fda.py` + hook) —
+   β chosen when we reach S4.
 6. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
@@ -267,6 +269,7 @@ python src/aggregate.py && python src/visualize.py
 |---|---|
 | `PROJECT.md` | Single source of truth: plans, facts, decisions, results (§5 study, §9 tracker, §10 log). |
 | `paper/literature/` | Verified literature knowledge hub: `references.md`, `references.bib`, topic notes `01`–`09`. |
+| `paper/results_notes.md` | Paper-facing running results narrative (baselines + S2, tables + interpretation). |
 | `PLAN.md` | Raw peer-review conversation that motivated S0–S6 (authoritative source is `PROJECT.md`). |
 | `AGENTS.md` (root) | DOX rail; user preferences; Child DOX Index. |
 | `src/common.py` | Shared paths/constants. |

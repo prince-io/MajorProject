@@ -178,17 +178,19 @@ Generated outputs (`data/`, `results/`, `paper/`, `configs/`, `src/`) must never
 
 Official experiment rows (1 seed 42, official ACDC val). **S0 = floor**, **S1 = anchor to beat**, **T1 = in-domain reference**, **T1aug = ceiling** (relabeled 2026-09-17, §5).
 
-Planned study rows (fill as runs complete):
+Study rows (official ACDC val; fill as runs complete):
 
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
-| S2 | BDD + photometric synthesis (offline) | | | | | 42 | planned |
+| S2 | BDD + photometric synthesis (offline) | **0.283** | **0.165** | 0.434 | 0.272 | 42 | **done** |
 | S3 | BDD + simple weather synthesis (offline) | | | | | 42 | planned |
 | S4 | BDD + FDA (online, best β) → ACDC | | | | | 42 | planned |
 | S5 | BDD + calibrated physics synthesis (offline) | | | | | 42 | planned |
 | S6a | best fixed combination | | | | | 42 | planned |
 | S6b | S6a + condition-aware selection | | | | | 42 | planned |
 | S6c | per-condition policy (optional) | | | | | 42 | optional |
+
+**S2 result — photometric degradation (zero-shot), 2026-09-17.** S1 is the exact control (S2 = A clear + B degraded; S1 = A + B clear). Official val: mAP@50 0.2690 → **0.2833** (+0.0143), mAP@50-95 0.1559 → **0.1650** (+0.0091), P 0.461 → 0.434, R 0.266 → 0.272. 5-fold 0.2863 ± 0.0138 → 0.2933 ± 0.0161 (+0.0070, within spread). In-domain BDD 0.4911 → 0.4920 (no forgetting). S2 captures ~28% of the S1→T1aug headroom. **Per weather (official mAP@50):** fog 0.491→0.485, night 0.193→0.179, **rain 0.244→0.256**, snow 0.284→0.282. **Per class:** person 0.270→0.303, rider 0.071→0.109, bus 0.169→0.206, truck 0.289→0.301, car flat, bicycle 0.113→0.078. **Reading:** first stage above the anchor, driven by rain + rare classes; fog/night/snow flat → generic photometrics do not model structured weather (motivates S3/S5). **Caveat:** single seed; the 5-fold gain is within noise, so directionally consistent but not yet significant. Full paper-facing write-up in `paper/results_notes.md`.
 
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
@@ -271,6 +273,7 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-17 | **S2 plan finalized:** split S1's 10k into A (5k clear) + B (5k); S2 = A clear + B degraded; ops brightness/contrast/gamma/saturation/Gaussian-noise (narrow ranges), 1–3 random per image, fixed order, filename-hash seed; **blur deferred**; labels copied | Resolves the S1-vs-S2 budget confound: **S1 (A+B clear) is the exact control**, no S1 rerun; only the appearance of the B half changes. S2 stays purely photometric so the S2-vs-S3/S5 comparison isolates weather structure |
 | 2026-09-17 | **Literature knowledge hub created** at `paper/literature/` (`references.md` + `references.bib` + 9 topic notes), metadata verified via the arXiv API | Rebuilds the deleted prior-work notes to a citable standard for the manuscript; explicitly flags the old "MIC" and "ViSGA" tags as unverified |
 | 2026-09-17 | **S2 implemented:** `src/synth/` (photometric ops, generic stage builder, inspector) + `data/yolo/bdd_s2/` (5,000 degraded B + 5,000 referenced clear); `configs/bdd_s2.yaml`; A/B halves recorded | S2 dataset ready; pure photometric (blur deferred); labels byte-identical; deterministic; a guard prevents degrading usable sources into near-black images (already-degenerate sources exempt) |
+| 2026-09-17 | **S2 result:** official mAP@50 **0.2833 vs S1 0.2690** (+0.0143), mAP@50-95 0.1650 vs 0.1559 (+0.0091); 5-fold +0.0070 (within ±1.4–1.6 spread); in-domain unchanged | First stage above the anchor; gains concentrated in **rain + rare classes**; fog/night/snow flat → generic photometrics do not model structured weather (motivates S3/S5). Single-seed caveat: directional, not yet significant. Paper write-up in `paper/results_notes.md` |
 
 ## 11. Open questions
 
