@@ -80,7 +80,7 @@ experiments have been run since; implementation is the next phase.**
 ### Generated artifacts (never write inside `datasets/`)
 - `data/yolo/bdd_src` — 12,000 images / 12,000 labels.
 - `data/yolo/acdc` — 2,006 images / 2,006 labels (0 orphans).
-- `splits/` — manifests are the source of truth for every split.
+- `splits/` — manifests are the source of truth for every split: `bdd_src_{train,val}`, `acdc_cv5/fold0..4`, `acdc_official_{train,val}` (1,600/406), `acdc_design` (400 = 100/weather), `acdc_pool_unlabeled` (1,200 = 300/weather), `acdc_perweather/*`.
 - `configs/` — baseline Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`).
 
 ### Pipeline order
@@ -163,12 +163,17 @@ scorer and is scored once per stage.
 - **Baselines locked and relabeled.** `S0` (floor), `S1` (anchor), `T1`/`T1aug` (in-domain
   reference/ceiling). Phase 0 done: dirs renamed, 26 evals re-run (bit-identical numbers),
   `aggregate.py`/`visualize.py` regenerated with S/T names.
+- **Phase 1 done:** `build_splits.py`/`write_configs.py`/`materialize.py` cleaned (retired
+  LOO/5k/smoke no longer emitted); added `splits/acdc_design.txt` (400 = 100/weather) and
+  `splits/acdc_pool_unlabeled.txt` (1,200 = 300/weather); official val untouched (406) and
+  all kept manifests byte-identical (hash guard passed).
 - **S0–S6 design documented** in `PROJECT.md` §5/§6/§9/§10 and this file. Decisions locked:
   offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 calibrated physics, design
   split, relabel to S/T IDs.
 - **Nothing implemented yet.** `src/synth/` and `src/aug/fda.py` are planned, not written.
-  `build_splits.py`/`write_configs.py` still reference the removed LOO/5k/smoke splits and
-  need cleaning in the implementation phase.
+- **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
+  hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
+  now tracked; only `/data/` and the heavy dataset subtrees are ignored.
 - **Literature knowledge hub created** at `paper/literature/` — `references.md` + `references.bib`
   (metadata verified via the arXiv API) plus topic notes `01`–`08` and a novelty map `09`.
   It rebuilds the deleted prior-work notes and flags the old "MIC"/"ViSGA" tags as unverified.
@@ -176,9 +181,8 @@ scorer and is scored once per stage.
   where they differ (notably: ACDC test has **no GT**, so official val is the scorer).
 - **`T1`/`T1aug` naming and the S4 β list ({0.05, 0.10}) are locked.**
 - **Deferred cleanup (intentionally left as-is):** `PLAN.md`; `splits/acdc_perweather/*`
-  (currently unused); the retired LOO/5k/smoke emissions in `build_splits.py` /
-  `write_configs.py` (Phase 1 code cleanup); `data/yolo/**/*.cache` (Ultralytics speed
-  caches). `Mini_Project_G-1_Final.pdf` and `yolov8n.pt` are kept reference material.
+  (currently unused); `data/yolo/**/*.cache` (Ultralytics speed caches).
+  `Mini_Project_G-1_Final.pdf` and `yolov8n.pt` are kept reference material.
 
 ---
 
@@ -186,8 +190,8 @@ scorer and is scored once per stage.
 
 1. ~~**Relabel baselines (Phase 0)**~~ — **done 2026-09-17** (dirs renamed, 26 evals re-run,
    aggregate/visualize regenerated; numbers bit-identical).
-2. **Lock splits (Phase 1):** add `acdc_design.txt` and `acdc_pool_unlabeled.txt`; clean
-   `src/data/build_splits.py` / `write_configs.py` to the current split set.
+2. ~~**Lock splits (Phase 1)**~~ — **done 2026-09-17**: `acdc_design.txt` (400) and
+   `acdc_pool_unlabeled.txt` (1,200) added; builders cleaned; kept manifests hash-verified.
    - **Decide the S5 calibration rule** before S5 runs (ACDC-train stats = mild UDA vs design
      split only vs BDD-only = zero-shot); see `paper/literature/09_gaps_and_positioning.md`.
    - **Keep `paper/literature/` current**: verify venues marked `confirm`, resolve or drop the

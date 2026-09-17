@@ -110,7 +110,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 **Implementation plan (next phase; no code yet).**
 - `src/synth/` (new package, needs its own `AGENTS.md`): `photometric.py` (S2), `weather.py` (S3), `physics.py` (S5), `calibrate.py` (measured stats → `results/analysis/synth_stats.json`), `build_dataset.py` (writes `data/yolo/bdd_<stage>`, manifests, configs), `inspect_synth.py`.
 - `src/aug/fda.py` + a minimal trainer hook in `src/train.py` for S4 only; fidelity check `max|ours-ref| = 0.0000`.
-- Clean `src/data/build_splits.py` / `write_configs.py` (they still reference the removed LOO/5k/smoke splits) to emit `bdd_src`, `acdc_cv5`, `acdc_official`, `acdc_perweather`, `acdc_design`, `acdc_pool_unlabeled`.
+- ~~Clean `src/data/build_splits.py` / `write_configs.py`~~ — **done 2026-09-17**: they now emit `bdd_src`, `acdc_cv5`, `acdc_official`, `acdc_perweather`, `acdc_design`, `acdc_pool_unlabeled`; official val kept at 406 and all kept manifests hash-verified.
 
 **Run order:** lock splits → confirm S0/S1 → S2 → S3 → S5 → S4 → S6a/S6b → optional S6c.
 
@@ -263,6 +263,7 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-17 | **S5 = calibrated physics** (parameters fitted to measured ACDC-train statistics) | Keeps S3 (hand-set) and S5 (measured) distinct; uses the unlabeled target legitimately |
 | 2026-09-17 | Relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug`; S4 β ∈ **{0.05, 0.10}** | Uniform S-ladder IDs; weights preserved and eval re-run because `aggregate.py` groups by the JSON `run` field. FDA β restricted to the two retained values (β=0.01 dropped) |
 | 2026-09-17 | **Phase 0 executed:** baselines renamed, 26 evals re-run, aggregate/visualize regenerated | Re-eval is bit-identical to the pre-rename numbers (S0 0.2007, S1 0.2690, T1 0.2162, T1aug 0.3196), confirming reproducibility |
+| 2026-09-17 | **Phase 1 executed:** design split `acdc_design.txt` (400 = 100/weather, seed 42) + unlabeled pool `acdc_pool_unlabeled.txt` (1,200 = 300/weather); `build_splits.py`/`write_configs.py`/`materialize.py` cleaned of LOO/5k/smoke | Leakage control: the 406 official val is the only scored set; design ∪ pool = official train (1,600, unchanged); all kept manifests byte-identical (hash guard passed) |
 | 2026-09-17 | **Literature knowledge hub created** at `paper/literature/` (`references.md` + `references.bib` + 9 topic notes), metadata verified via the arXiv API | Rebuilds the deleted prior-work notes to a citable standard for the manuscript; explicitly flags the old "MIC" and "ViSGA" tags as unverified |
 
 ## 11. Open questions

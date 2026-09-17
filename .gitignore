@@ -5,11 +5,15 @@
 __pycache__/
 *.py[cod]
 
-# Raw datasets (17G, read-only source material)
-datasets/
+# Raw datasets: ignore the heavy image/label trees, keep the DOX docs (AGENTS.md)
+/datasets/acdc/images/
+/datasets/acdc/labels/
+/datasets/bdd100k/bdd100k/
+/datasets/bdd100k/bdd100k_labels_release/
+/datasets/bdd100k/bdd100k_seg/
 
-# Generated YOLO datasets (4.4G, regenerable via src/data)
-data/
+# Generated YOLO datasets (regenerable via src/data; note: anchored so src/data/ is tracked)
+/data/
 
 # Model weights (training outputs + pretrained)
 *.pt

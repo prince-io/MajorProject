@@ -1,0 +1,47 @@
+{
+  "pool": 12454,
+  "splits": {
+    "train": {
+      "images": 10000,
+      "strata": {
+        "none": 7415,
+        "bicycle": 360,
+        "bicycle,bus": 87,
+        "bicycle,bus,rider": 153,
+        "bicycle,rider": 539,
+        "bus": 1414,
+        "bus,rider": 6,
+        "rider": 26
+      },
+      "class_instances": {
+        "person": 13460,
+        "rider": 974,
+        "car": 111976,
+        "truck": 5962,
+        "bus": 2205,
+        "bicycle": 1978
+      }
+    },
+    "val": {
+      "images": 2000,
+      "strata": {
+        "none": 1483,
+        "bicycle": 72,
+        "bicycle,bus": 17,
+        "bicycle,bus,rider": 31,
+        "bicycle,rider": 108,
+        "bus": 283,
+        "bus,rider": 1,
+        "rider": 5
+      },
+      "class_instances": {
+        "person": 2649,
+        "rider": 196,
+        "car": 22458,
+        "truck": 1169,
+        "bus": 434,
+        "bicycle": 437
+      }
+    }
+  }
+}

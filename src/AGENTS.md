@@ -13,7 +13,8 @@
 - Class mappings come only from `scripts/class_map.py` (via `src/common.py`); never redefine class IDs here.
 - `datasets/` is read-only. Converters may read it but must write only under `data/yolo/`.
 - `splits/**` manifests are the source of truth for every split; trainers and analyses read manifests, never glob directories.
-- All splits are generated with `seed=42` and must remain reproducible.
+- All splits are generated with `seed=42` and must remain reproducible. `build_splits.py` emits only `bdd_src_{train,val}`, `acdc_cv5/fold{0..4}_{train,test}`, `acdc_official_{train,val}`, `acdc_design`, `acdc_pool_unlabeled`, and `acdc_perweather/*`.
+- **Leakage control:** `acdc_design.txt` (400 = 100/weather, from official train) is the only ACDC set allowed for inspecting failure modes / choosing S6 policies. `acdc_pool_unlabeled.txt` (official train − design = 1,200) is the unlabeled adaptation pool (S4 style, S5 calibration). The official val (`acdc_official_val.txt`, 406) is the only scored set and is never trained on or sampled into a pool. `acdc_official_train.txt` stays full (1,600) for the T1aug ceiling.
 - `data/yolo/<dataset>/images/` and `labels/` are generated artifacts; do not hand-edit them.
 - Labels must mirror images exactly (no orphans, no missing). Run `prune_labels.py` after `materialize.py`.
 - `train.py --aug {none,default}` selects the augmentation preset: `none` = S0/T1 baseline, `default` = T1aug/S1 standard augmentation. All prior method/augmentation code was removed on 2026-09-17; only the baseline presets remain.
@@ -38,7 +39,8 @@
 - `python src/aggregate.py` runs without error and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
 - `python src/visualize.py` writes per-experiment figures and `results/summary/figures/comparison_*.png` plus `class_weather_*.png`.
 - `python src/data/prune_labels.py --dry-run` reports 0 orphan labels for both datasets.
-- Current manifest sizes in `splits/` match the dataset facts: BDD train/val 10,000/2,000; ACDC official train/val 1,600/406; ACDC 5-fold (1,600 train / 406 test per fold).
+- `splits/` sizes: BDD train/val 10,000/2,000; ACDC official train/val 1,600/406; ACDC 5-fold (1,600/406 per fold); design 400 (100/weather); pool 1,200 (300/weather). Design ∪ pool = official train, design ∩ val = ∅.
+- No retired split/config tokens (`train_5k`, `smoke`, `acdc_loo`, `holdout_`) remain in `splits/`, `configs/`, or `src/`.
 
 ## Child DOX Index
 

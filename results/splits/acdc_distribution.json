@@ -1,0 +1,185 @@
+{
+  "pool": 2006,
+  "cv5": {
+    "fold0": {
+      "train_images": 1604,
+      "test_images": 402,
+      "test_weather": {
+        "fog": 100,
+        "night": 102,
+        "rain": 100,
+        "snow": 100
+      },
+      "test_class_instances": {
+        "person": 428,
+        "rider": 59,
+        "car": 1721,
+        "truck": 123,
+        "bus": 38,
+        "bicycle": 154
+      }
+    },
+    "fold1": {
+      "train_images": 1605,
+      "test_images": 401,
+      "test_weather": {
+        "fog": 100,
+        "night": 101,
+        "rain": 100,
+        "snow": 100
+      },
+      "test_class_instances": {
+        "person": 414,
+        "rider": 69,
+        "car": 1719,
+        "truck": 118,
+        "bus": 31,
+        "bicycle": 195
+      }
+    },
+    "fold2": {
+      "train_images": 1605,
+      "test_images": 401,
+      "test_weather": {
+        "fog": 100,
+        "night": 101,
+        "rain": 100,
+        "snow": 100
+      },
+      "test_class_instances": {
+        "person": 447,
+        "rider": 43,
+        "car": 1675,
+        "truck": 157,
+        "bus": 46,
+        "bicycle": 151
+      }
+    },
+    "fold3": {
+      "train_images": 1605,
+      "test_images": 401,
+      "test_weather": {
+        "fog": 100,
+        "night": 101,
+        "rain": 100,
+        "snow": 100
+      },
+      "test_class_instances": {
+        "person": 533,
+        "rider": 53,
+        "car": 1697,
+        "truck": 130,
+        "bus": 51,
+        "bicycle": 134
+      }
+    },
+    "fold4": {
+      "train_images": 1605,
+      "test_images": 401,
+      "test_weather": {
+        "fog": 100,
+        "night": 101,
+        "rain": 100,
+        "snow": 100
+      },
+      "test_class_instances": {
+        "person": 399,
+        "rider": 52,
+        "car": 1710,
+        "truck": 115,
+        "bus": 51,
+        "bicycle": 158
+      }
+    }
+  },
+  "official": {
+    "train_images": 1600,
+    "val_images": 406,
+    "val_weather": {
+      "fog": 100,
+      "night": 106,
+      "rain": 100,
+      "snow": 100
+    },
+    "val_class_instances": {
+      "person": 529,
+      "rider": 49,
+      "car": 1865,
+      "truck": 106,
+      "bus": 49,
+      "bicycle": 150
+    }
+  },
+  "design": {
+    "images": 400,
+    "per_weather": {
+      "fog": 100,
+      "night": 100,
+      "rain": 100,
+      "snow": 100
+    },
+    "class_instances": {
+      "person": 403,
+      "rider": 65,
+      "car": 1773,
+      "truck": 125,
+      "bus": 51,
+      "bicycle": 160
+    }
+  },
+  "pool_unlabeled": {
+    "images": 1200,
+    "per_weather": {
+      "fog": 300,
+      "night": 300,
+      "rain": 300,
+      "snow": 300
+    }
+  },
+  "perweather": {
+    "fog": {
+      "images": 500,
+      "class_instances": {
+        "person": 238,
+        "rider": 37,
+        "car": 2134,
+        "truck": 401,
+        "bus": 23,
+        "bicycle": 73
+      }
+    },
+    "night": {
+      "images": 506,
+      "class_instances": {
+        "person": 829,
+        "rider": 168,
+        "car": 2000,
+        "truck": 22,
+        "bus": 57,
+        "bicycle": 336
+      }
+    },
+    "rain": {
+      "images": 500,
+      "class_instances": {
+        "person": 376,
+        "rider": 31,
+        "car": 2017,
+        "truck": 47,
+        "bus": 69,
+        "bicycle": 216
+      }
+    },
+    "snow": {
+      "images": 500,
+      "class_instances": {
+        "person": 778,
+        "rider": 40,
+        "car": 2371,
+        "truck": 173,
+        "bus": 68,
+        "bicycle": 167
+      }
+    }
+  }
+}
