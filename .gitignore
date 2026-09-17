@@ -1,0 +1,28 @@
+# Virtual environments
+.venv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Raw datasets (17G, read-only source material)
+datasets/
+
+# Generated YOLO datasets (4.4G, regenerable via src/data)
+data/
+
+# Model weights (training outputs + pretrained)
+*.pt
+
+# Ultralytics label caches
+*.cache
+
+# Transient / regenerable results
+results/runs/
+results/analysis/
+results/experiments/*/eval/_tmp/
+results/experiments/*/eval/_val/
+
+# OS / editor
+.DS_Store
+.vscode/

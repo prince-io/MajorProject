@@ -1,0 +1,223 @@
+
+==============================================================================
+ACDC -- per-weather train inspection
+==============================================================================
+
+--- ACDC weather: fog ---
+[load] /home/ps/Desktop/major_project/datasets/acdc/labels/fog/instancesonly_fog_train_gt_detection.json (0.9 MiB)
+  images (weather subset): 400
+  annotations (weather subset): 2290
+  categories: 8
+  raw categories: [(24, 'person'), (25, 'rider'), (26, 'car'), (27, 'truck'), (28, 'bus'), (31, 'train'), (32, 'motorcycle'), (33, 'bicycle')]
+  sample annotations (seed=42):
+    category_id=26 (car) -> 2 (car); bbox=[784.0, 773.0, 36.0, 29.0]
+    category_id=26 (car) -> 2 (car); bbox=[793.0, 777.0, 19.0, 15.0]
+    category_id=26 (car) -> 2 (car); bbox=[694.0, 770.0, 58.0, 46.0]
+  kept: 2269  dropped: 21
+  distribution after mapping:
+  0 person        176  (  7.8%)
+  1 rider          26  (  1.1%)
+  2 car          1638  ( 72.2%)
+  3 truck         360  ( 15.9%)
+  4 bus            18  (  0.8%)
+  5 bicycle        51  (  2.2%)
+  TOTAL          2269
+
+--- ACDC weather: night ---
+[load] /home/ps/Desktop/major_project/datasets/acdc/labels/night/instancesonly_night_train_gt_detection.json (1.2 MiB)
+  images (weather subset): 400
+  annotations (weather subset): 2975
+  categories: 8
+  raw categories: [(24, 'person'), (25, 'rider'), (26, 'car'), (27, 'truck'), (28, 'bus'), (31, 'train'), (32, 'motorcycle'), (33, 'bicycle')]
+  sample annotations (seed=42):
+    category_id=26 (car) -> 2 (car); bbox=[823.0, 567.0, 26.0, 22.0]
+    category_id=24 (person) -> 0 (person); bbox=[1224.0, 549.0, 46.0, 123.0]
+    category_id=26 (car) -> 2 (car); bbox=[1003.0, 595.0, 18.0, 26.0]
+  kept: 2877  dropped: 98
+  distribution after mapping:
+  0 person        671  ( 23.3%)
+  1 rider         142  (  4.9%)
+  2 car          1734  ( 60.3%)
+  3 truck          14  (  0.5%)
+  4 bus            57  (  2.0%)
+  5 bicycle       259  (  9.0%)
+  TOTAL          2877
+
+--- ACDC weather: rain ---
+[load] /home/ps/Desktop/major_project/datasets/acdc/labels/rain/instancesonly_rain_train_gt_detection.json (4.3 MiB)
+  [NOTE] file holds 1600 images across multiple weathers; filtered to 400 'rain' images.
+  images (weather subset): 400
+  annotations (weather subset): 2039
+  categories: 8
+  raw categories: [(24, 'person'), (25, 'rider'), (26, 'car'), (27, 'truck'), (28, 'bus'), (31, 'train'), (32, 'motorcycle'), (33, 'bicycle')]
+  sample annotations (seed=42):
+    category_id=24 (person) -> 0 (person); bbox=[1181.0, 657.0, 86.0, 193.0]
+    category_id=26 (car) -> 2 (car); bbox=[1001.0, 761.0, 86.0, 92.0]
+    category_id=26 (car) -> 2 (car); bbox=[565.0, 777.0, 92.0, 49.0]
+  kept: 2002  dropped: 37
+  distribution after mapping:
+  0 person        242  ( 12.1%)
+  1 rider          21  (  1.0%)
+  2 car          1477  ( 73.8%)
+  3 truck          31  (  1.5%)
+  4 bus            37  (  1.8%)
+  5 bicycle       194  (  9.7%)
+  TOTAL          2002
+
+--- ACDC weather: snow ---
+[load] /home/ps/Desktop/major_project/datasets/acdc/labels/snow/instancesonly_snow_train_gt_detection.json (1.3 MiB)
+  images (weather subset): 400
+  annotations (weather subset): 2831
+  categories: 8
+  raw categories: [(24, 'person'), (25, 'rider'), (26, 'car'), (27, 'truck'), (28, 'bus'), (31, 'train'), (32, 'motorcycle'), (33, 'bicycle')]
+  sample annotations (seed=42):
+    category_id=26 (car) -> 2 (car); bbox=[697.0, 778.0, 33.0, 32.0]
+    category_id=26 (car) -> 2 (car); bbox=[1613.0, 773.0, 307.0, 93.0]
+    category_id=26 (car) -> 2 (car); bbox=[915.0, 765.0, 50.0, 42.0]
+  kept: 2775  dropped: 56
+  distribution after mapping:
+  0 person        603  ( 21.7%)
+  1 rider          38  (  1.4%)
+  2 car          1808  ( 65.2%)
+  3 truck         132  (  4.8%)
+  4 bus            56  (  2.0%)
+  5 bicycle       138  (  5.0%)
+  TOTAL          2775
+
+==============================================================================
+BDD100K -- train label inspection
+==============================================================================
+[load] /home/ps/Desktop/major_project/datasets/bdd100k/bdd100k_labels_release/bdd100k/labels/bdd100k_labels_images_train.json (1384.0 MiB)
+
+  total records: 69863
+  attributes keys: ['scene', 'timeofday', 'weather']
+  'weather' present: True
+  records per weather:
+    clear            37344
+    overcast         8770
+    undefined        8119
+    snowy            5549
+    rainy            5070
+    partly cloudy    4881
+    foggy            130
+  clear-weather records: 37344
+
+  sample clear-weather records (seed=42):
+    843fca35-ab30259c.jpg: 25 labels
+      traffic sign     geometry=box2d   -> DROPPED
+      traffic sign     geometry=box2d   -> DROPPED
+      traffic sign     geometry=box2d   -> DROPPED
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      traffic light    geometry=box2d   -> DROPPED
+      traffic light    geometry=box2d   -> DROPPED
+      drivable area    geometry=poly2d  -> DROPPED
+      drivable area    geometry=poly2d  -> DROPPED
+      drivable area    geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+    0a15c5c8-160bd031.jpg: 34 labels
+      traffic sign     geometry=box2d   -> DROPPED
+      traffic sign     geometry=box2d   -> DROPPED
+      traffic sign     geometry=box2d   -> DROPPED
+      traffic light    geometry=box2d   -> DROPPED
+      traffic light    geometry=box2d   -> DROPPED
+      traffic light    geometry=box2d   -> DROPPED
+      traffic sign     geometry=box2d   -> DROPPED
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      traffic light    geometry=box2d   -> DROPPED
+      drivable area    geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+    09a0c046-c0782473.jpg: 24 labels
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      car              geometry=box2d   -> 2 (car)
+      traffic sign     geometry=box2d   -> DROPPED
+      drivable area    geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+      lane             geometry=poly2d  -> DROPPED
+
+  distribution after mapping (clear-weather records only):
+  0 person      33796  (  7.8%)
+  1 rider        2048  (  0.5%)
+  2 car        372733  ( 86.6%)
+  3 truck       12533  (  2.9%)
+  4 bus          4842  (  1.1%)
+  5 bicycle      4593  (  1.1%)
+  TOTAL        430545
+
+==============================================================================
+Path resolution check
+==============================================================================
+
+ACDC (candidate: datasets/acdc/images/<file_name>):
+  [HIT] datasets/acdc/images/fog/train/GP020478/GP020478_frame_000241_rgb_anon.png
+  [HIT] datasets/acdc/images/fog/train/GP010477/GP010477_frame_000365_rgb_anon.png
+  [HIT] datasets/acdc/images/fog/train/GP010477/GP010477_frame_000390_rgb_anon.png
+  [HIT] datasets/acdc/images/night/train/GOPR0376/GOPR0376_frame_000435_rgb_anon.png
+  [HIT] datasets/acdc/images/night/train/GOPR0376/GOPR0376_frame_000369_rgb_anon.png
+  [HIT] datasets/acdc/images/night/train/GP010397/GP010397_frame_000565_rgb_anon.png
+  [HIT] datasets/acdc/images/rain/train/GP020402/GP020402_frame_000478_rgb_anon.png
+  [HIT] datasets/acdc/images/rain/train/GP020400/GP020400_frame_000496_rgb_anon.png
+  [HIT] datasets/acdc/images/rain/train/GP020571/GP020571_frame_000666_rgb_anon.png
+  [HIT] datasets/acdc/images/snow/train/GOPR0607/GOPR0607_frame_000761_rgb_anon.png
+  [HIT] datasets/acdc/images/snow/train/GOPR0607/GOPR0607_frame_000213_rgb_anon.png
+  [HIT] datasets/acdc/images/snow/train/GP040176/GP040176_frame_000994_rgb_anon.png
+
+BDD100K (ordered candidates, then recursive index):
+  [HIT] 837da339-99bbeed2.jpg -> datasets/bdd100k/bdd100k/bdd100k/images/100k/train/trainB/837da339-99bbeed2.jpg  [recursive index (100k/train/trainB)]
+  [HIT] 44494c8e-85cfa1f3.jpg -> datasets/bdd100k/bdd100k/bdd100k/images/10k/train/44494c8e-85cfa1f3.jpg  [candidate 10k/train]
+  [HIT] 8c803dea-d4f996b1.jpg -> datasets/bdd100k/bdd100k/bdd100k/images/100k/train/trainB/8c803dea-d4f996b1.jpg  [recursive index (100k/train/trainB)]

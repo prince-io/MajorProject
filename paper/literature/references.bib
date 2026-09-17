@@ -1,0 +1,618 @@
+% Canonical BibTeX for the S0-S6 adverse-weather detection study.
+% Metadata verified against the arXiv API where an arXiv ID is present; venue fields
+% marked "confirm" must be checked against the official proceedings before submission.
+% Keep in sync with references.md.
+
+% ---------------------------- Datasets / benchmarks ----------------------------
+
+@inproceedings{sakaridis2021acdc,
+  title     = {{ACDC}: The Adverse Conditions Dataset with Correspondences for Robust Semantic Driving Scene Perception},
+  author    = {Sakaridis, Christos and Wang, Haoran and Li, Ke and Zurbr{\"u}gg, Ren{\'e} and Jadon, Arpit and Abbeloos, Wim and Olmeda Reino, Daniel and Van Gool, Luc and Dai, Dengxin},
+  booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2021},
+  eprint    = {2104.13395},
+  archivePrefix = {arXiv},
+  note      = {Confirm proceedings title wording}
+}
+
+@inproceedings{yu2020bdd100k,
+  title     = {{BDD100K}: A Diverse Driving Dataset for Heterogeneous Multitask Learning},
+  author    = {Yu, Fisher and Chen, Haofeng and Wang, Xin and Xian, Wenqi and Chen, Yingying and Liu, Fangchen and Madhavan, Vashisht and Darrell, Trevor},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2020},
+  eprint    = {1805.04687},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{cordts2016cityscapes,
+  title     = {The Cityscapes Dataset for Semantic Urban Scene Understanding},
+  author    = {Cordts, Marius and Omran, Mohamed and Ramos, Sebastian and Rehfeld, Timo and Enzweiler, Markus and Benenson, Rodrigo and Franke, Uwe and Roth, Stefan and Schiele, Bernt},
+  booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2016},
+  eprint    = {1604.01685},
+  archivePrefix = {arXiv}
+}
+
+@article{sakaridis2018syntheticfog,
+  title   = {Semantic Foggy Scene Understanding with Synthetic Data},
+  author  = {Sakaridis, Christos and Dai, Dengxin and Van Gool, Luc},
+  journal = {International Journal of Computer Vision (IJCV)},
+  year    = {2018},
+  eprint  = {1708.07819},
+  archivePrefix = {arXiv}
+}
+
+@misc{kenk2020dawn,
+  title   = {{DAWN}: Vehicle Detection in Adverse Weather Nature Dataset},
+  author  = {Kenk, Mourad A. and Hassaballah, Mahmoud},
+  year    = {2020},
+  eprint  = {2008.05402},
+  archivePrefix = {arXiv},
+  note    = {Preprint}
+}
+
+@article{pitropov2021cadc,
+  title   = {Canadian Adverse Driving Conditions Dataset},
+  author  = {Pitropov, Matthew and Garcia, Danson and Rebello, Jason and Smart, Michael and Wang, Carlos and Czarnecki, Krzysztof and Waslander, Steven},
+  journal = {The International Journal of Robotics Research (IJRR)},
+  year    = {2021},
+  eprint  = {2001.10117},
+  archivePrefix = {arXiv},
+  note    = {Confirm venue}
+}
+
+@misc{tang2025cadcplus,
+  title   = {How Hard Is Snow? A Paired Domain Adaptation Dataset for Clear and Snowy Weather: {CADC+}},
+  author  = {Tang, Mei Qi and Sedwards, Sean and Huang, Chengjie and Czarnecki, Krzysztof},
+  year    = {2025},
+  eprint  = {2506.16531},
+  archivePrefix = {arXiv},
+  note    = {Preprint}
+}
+
+@inproceedings{bijelic2020seeingthroughfog,
+  title     = {Seeing Through Fog Without Seeing Fog: Deep Multimodal Sensor Fusion in Unseen Adverse Weather},
+  author    = {Bijelic, Mario and Gruber, Tobias and Mannan, Fahim and Kraus, Florian and Ritter, Werner and Dietmayer, Klaus and Heide, Felix},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2020},
+  eprint    = {1902.08913},
+  archivePrefix = {arXiv}
+}
+
+@misc{neumann2019nightowls,
+  title  = {{NightOwls}: A Pedestrians at Night Dataset},
+  author = {Neumann, Lukas and Karg, Michelle and Zhang, Shanshan and Scharfenberger, Christian and Piegert, Eric and Mistr, Sarah and Prokofyeva, Olga and Thiel, Robert and Vedaldi, Andrea and Zisserman, Andrew and Schiele, Bernt},
+  year   = {2019},
+  note   = {Manual entry; confirm venue/pages}
+}
+
+% ---------------------------- Detection backbones ----------------------------
+
+@inproceedings{redmon2016yolo,
+  title     = {You Only Look Once: Unified, Real-Time Object Detection},
+  author    = {Redmon, Joseph and Divvala, Santosh and Girshick, Ross and Farhadi, Ali},
+  booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2016},
+  eprint    = {1506.02640},
+  archivePrefix = {arXiv}
+}
+
+@misc{bochkovskiy2020yolov4,
+  title  = {{YOLOv4}: Optimal Speed and Accuracy of Object Detection},
+  author = {Bochkovskiy, Alexey and Wang, Chien-Yao and Liao, Hong-Yuan Mark},
+  year   = {2020},
+  eprint = {2004.10934},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@inproceedings{wang2023yolov7,
+  title     = {{YOLOv7}: Trainable Bag-of-Freebies Sets New State-of-the-Art for Real-Time Object Detectors},
+  author    = {Wang, Chien-Yao and Bochkovskiy, Alexey and Liao, Hong-Yuan Mark},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2023},
+  eprint    = {2207.02696},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{wang2024yolov9,
+  title     = {{YOLOv9}: Learning What You Want to Learn Using Programmable Gradient Information},
+  author    = {Wang, Chien-Yao and Yeh, I-Hau and Liao, Hong-Yuan Mark},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2024},
+  eprint    = {2402.13616},
+  archivePrefix = {arXiv}
+}
+
+@misc{jocher2023ultralytics,
+  title        = {Ultralytics {YOLOv8}},
+  author       = {Jocher, Glenn and Chaurasia, Ayush and Qiu, Jing},
+  year         = {2023},
+  howpublished = {\url{https://github.com/ultralytics/ultralytics}},
+  note         = {Software; pin version 8.4.147}
+}
+
+@inproceedings{ren2015fasterrcnn,
+  title     = {Faster {R-CNN}: Towards Real-Time Object Detection with Region Proposal Networks},
+  author    = {Ren, Shaoqing and He, Kaiming and Girshick, Ross and Sun, Jian},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2015},
+  eprint    = {1506.01497},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{lin2017fpn,
+  title     = {Feature Pyramid Networks for Object Detection},
+  author    = {Lin, Tsung-Yi and Doll{\'a}r, Piotr and Girshick, Ross and He, Kaiming and Hariharan, Bharath and Belongie, Serge},
+  booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2017},
+  eprint    = {1612.03144},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{lin2017focalloss,
+  title     = {Focal Loss for Dense Object Detection},
+  author    = {Lin, Tsung-Yi and Goyal, Priya and Girshick, Ross and He, Kaiming and Doll{\'a}r, Piotr},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017},
+  eprint    = {1708.02002},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{carion2020detr,
+  title     = {End-to-End Object Detection with Transformers},
+  author    = {Carion, Nicolas and Massa, Francisco and Synnaeve, Gabriel and Usunier, Nicolas and Kirillov, Alexander and Zagoruyko, Sergey},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2020},
+  eprint    = {2005.12872},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{lin2014coco,
+  title     = {Microsoft {COCO}: Common Objects in Context},
+  author    = {Lin, Tsung-Yi and Maire, Michael and Belongie, Serge and Bourdev, Lubomir and Girshick, Ross and Hays, James and Perona, Pietro and Ramanan, Deva and Zitnick, C. Lawrence and Doll{\'a}r, Piotr},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2014},
+  eprint    = {1405.0312},
+  archivePrefix = {arXiv}
+}
+
+% ---------------------------- Domain adaptation for detection ----------------------------
+
+@inproceedings{chen2018domainadaptivefasterrcnn,
+  title     = {Domain Adaptive Faster {R-CNN} for Object Detection in the Wild},
+  author    = {Chen, Yuhua and Li, Wen and Sakaridis, Christos and Dai, Dengxin and Van Gool, Luc},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2018},
+  eprint    = {1803.03243},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{saito2019swda,
+  title     = {Strong-Weak Distribution Alignment for Adaptive Object Detection},
+  author    = {Saito, Kuniaki and Ushiku, Yoshitaka and Harada, Tatsuya and Saenko, Kate},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2019},
+  eprint    = {1812.04798},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{deng2021umt,
+  title     = {Unbiased Mean Teacher for Cross-Domain Object Detection},
+  author    = {Deng, Jinhong and Li, Wen and Chen, Yuhua and Duan, Lixin},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2021},
+  eprint    = {2003.00707},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{li2022sigma,
+  title     = {{SIGMA}: Semantic-Complete Graph Matching for Domain Adaptive Object Detection},
+  author    = {Li, Wuyang and Liu, Xinyu and Yuan, Yixuan},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2022},
+  eprint    = {2203.06398},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{sindagi2020prior,
+  title     = {Prior-Based Domain Adaptive Object Detection for Hazy and Rainy Conditions},
+  author    = {Sindagi, Vishwanath A. and Oza, Poojan and Yasarla, Rajeev and Patel, Vishal M.},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2020},
+  eprint    = {1912.00070},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{jeon2024daraw,
+  title     = {{DA-RAW}: Domain Adaptive Object Detection for Real-World Adverse Weather Conditions},
+  author    = {Jeon, Minsik and Seo, Junwon and Min, Jihong},
+  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+  year      = {2024},
+  eprint    = {2309.08152},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{li2023foggydaod,
+  title     = {Domain Adaptive Object Detection for Autonomous Driving under Foggy Weather},
+  author    = {Li, Jinlong and Xu, Runsheng and Ma, Jin and Zou, Qin and Ma, Jiaqi and Yu, Hongkai},
+  booktitle = {IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+  year      = {2023},
+  eprint    = {2210.15176},
+  archivePrefix = {arXiv},
+  note      = {Confirm venue}
+}
+
+@inproceedings{menke2023awada,
+  title     = {{AWADA}: Attention-Weighted Adversarial Domain Adaptation for Object Detection},
+  author    = {Menke, Maximilian and Wenzel, Thomas and Schwung, Andreas},
+  booktitle = {IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+  year      = {2023},
+  eprint    = {2208.14662},
+  archivePrefix = {arXiv},
+  note      = {Confirm venue}
+}
+
+@inproceedings{eskandar2022multimodal,
+  title     = {An Unsupervised Domain Adaptive Approach for Multimodal 2D Object Detection in Adverse Weather Conditions},
+  author    = {Eskandar, George and Marsden, Robert A. and Pandiyan, Pavithran and D{\"o}bler, Mario and Guirguis, Karim and Yang, Bin},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  year      = {2022},
+  eprint    = {2203.03568},
+  archivePrefix = {arXiv},
+  note      = {Confirm venue}
+}
+
+@inproceedings{rezaeianaran2021seeking,
+  title     = {Seeking Similarities over Differences: Similarity-Based Domain Alignment for Adaptive Object Detection},
+  author    = {Rezaeianaran, Farzaneh and Shetty, Rakshith and Aljundi, Rahaf and Olmeda Reino, Daniel and Zhang, Shanshan and Schiele, Bernt},
+  booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2021},
+  eprint    = {2110.01428},
+  archivePrefix = {arXiv}
+}
+
+@misc{hnewa2021multiscale,
+  title  = {Multiscale Domain Adaptive {YOLO} for Cross-Domain Object Detection},
+  author = {Hnewa, Mazin and Radha, Hayder},
+  year   = {2021},
+  eprint = {2106.01483},
+  archivePrefix = {arXiv},
+  note   = {Preprint; confirm venue}
+}
+
+@misc{hnewa2022integrated,
+  title  = {Integrated Multiscale Domain Adaptive {YOLO}},
+  author = {Hnewa, Mazin and Radha, Hayder},
+  year   = {2022},
+  eprint = {2202.03527},
+  archivePrefix = {arXiv},
+  note   = {Preprint; confirm venue}
+}
+
+@article{ganin2016dann,
+  title   = {Domain-Adversarial Training of Neural Networks},
+  author  = {Ganin, Yaroslav and Ustinova, Evgeniya and Ajakan, Hana and Germain, Pascal and Larochelle, Hugo and Laviolette, Fran{\c{c}}ois and Marchand, Mario and Lempitsky, Victor},
+  journal = {Journal of Machine Learning Research (JMLR)},
+  year    = {2016},
+  eprint  = {1505.07818},
+  archivePrefix = {arXiv}
+}
+
+% ---------------------------- Frequency-domain methods ----------------------------
+
+@inproceedings{yang2020fda,
+  title     = {{FDA}: Fourier Domain Adaptation for Semantic Segmentation},
+  author    = {Yang, Yanchao and Soatto, Stefano},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2020},
+  eprint    = {2004.05498},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{xu2021fact,
+  title     = {A Fourier-Based Framework for Domain Generalization},
+  author    = {Xu, Qinwei and Zhang, Ruipeng and Zhang, Ya and Wang, Yanfeng and Tian, Qi},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2021},
+  eprint    = {2105.11120},
+  archivePrefix = {arXiv}
+}
+
+@misc{du2025pagen,
+  title  = {{PAGen}: Phase-Guided Amplitude Generation for Domain-Adaptive Object Detection},
+  author = {Du, Shuchen and Lei, Shuo and Li, Feiran and Li, Jiacheng and Iso, Daisuke},
+  year   = {2025},
+  eprint = {2511.22029},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@article{oppenheim1981phase,
+  title   = {The Importance of Phase in Signals},
+  author  = {Oppenheim, Alan V. and Lim, Jae S.},
+  journal = {Proceedings of the IEEE},
+  volume  = {69},
+  number  = {5},
+  pages   = {529--541},
+  year    = {1981},
+  note    = {Manual entry}
+}
+
+% ---------------------------- Weather synthesis / translation ----------------------------
+
+@inproceedings{zhu2017cyclegan,
+  title     = {Unpaired Image-to-Image Translation Using Cycle-Consistent Adversarial Networks},
+  author    = {Zhu, Jun-Yan and Park, Taesung and Isola, Phillip and Efros, Alexei A.},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017},
+  eprint    = {1703.10593},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{huang2018munit,
+  title     = {Multimodal Unsupervised Image-to-Image Translation},
+  author    = {Huang, Xun and Liu, Ming-Yu and Belongie, Serge and Kautz, Jan},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2018},
+  eprint    = {1804.04732},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{park2020cut,
+  title     = {Contrastive Learning for Unpaired Image-to-Image Translation},
+  author    = {Park, Taesung and Efros, Alexei A. and Zhang, Richard and Zhu, Jun-Yan},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2020},
+  eprint    = {2007.15651},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{liu2022iayolo,
+  title     = {Image-Adaptive {YOLO} for Object Detection in Adverse Weather Conditions},
+  author    = {Liu, Wenyu and Ren, Gaofeng and Yu, Runsheng and Guo, Shi and Zhu, Jianke and Zhang, Lei},
+  booktitle = {AAAI Conference on Artificial Intelligence},
+  year      = {2022},
+  eprint    = {2112.08088},
+  archivePrefix = {arXiv}
+}
+
+@article{garg2006rain,
+  title   = {Photorealistic Rendering of Rain Streaks},
+  author  = {Garg, Kshitiz and Nayar, Shree K.},
+  journal = {ACM Transactions on Graphics (SIGGRAPH)},
+  year    = {2006},
+  note    = {Manual entry}
+}
+
+@article{garg2007visionrain,
+  title   = {Vision and Rain},
+  author  = {Garg, Kshitiz and Nayar, Shree K.},
+  journal = {International Journal of Computer Vision (IJCV)},
+  year    = {2007},
+  note    = {Manual entry}
+}
+
+@article{koschmieder1924,
+  title   = {Theorie der horizontalen Sichtweite},
+  author  = {Koschmieder, Harald},
+  journal = {Beitr{\"a}ge zur Physik der freien Atmosph{\"a}re},
+  year    = {1924},
+  note    = {Manual entry; classical atmospheric-scattering / visibility law}
+}
+
+@inproceedings{he2009darkchannel,
+  title     = {Single Image Haze Removal Using Dark Channel Prior},
+  author    = {He, Kaiming and Sun, Jian and Tang, Xiaoou},
+  booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2009},
+  note      = {Manual entry; also IEEE TPAMI 2011}
+}
+
+% ---------------------------- Restoration / low-level ----------------------------
+
+@article{jiang2021enlightengan,
+  title   = {{EnlightenGAN}: Deep Light Enhancement Without Paired Supervision},
+  author  = {Jiang, Yifan and Gong, Xinyu and Liu, Ding and Cheng, Yu and Fang, Chen and Shen, Xiaohui and Yang, Jianchao and Zhou, Pan and Wang, Zhangyang},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)},
+  year    = {2021},
+  eprint  = {1906.06972},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{guo2020zerodce,
+  title     = {Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement},
+  author    = {Guo, Chunle and Li, Chongyi and Guo, Jichang and Loy, Chen Change and Hou, Junhui and Kwong, Sam and Cong, Runmin},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2020},
+  eprint    = {2001.06826},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{zamir2022restormer,
+  title     = {Restormer: Efficient Transformer for High-Resolution Image Restoration},
+  author    = {Zamir, Syed Waqas and Arora, Aditya and Khan, Salman and Hayat, Munawar and Khan, Fahad Shahbaz and Yang, Ming-Hsuan},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2022},
+  eprint    = {2111.09881},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{zamir2021mprnet,
+  title     = {Multi-Stage Progressive Image Restoration},
+  author    = {Zamir, Syed Waqas and Arora, Aditya and Khan, Salman and Hayat, Munawar and Khan, Fahad Shahbaz and Yang, Ming-Hsuan and Shao, Ling},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2021},
+  eprint    = {2102.02808},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{qin2020ffanet,
+  title     = {{FFA-Net}: Feature Fusion Attention Network for Single Image Dehazing},
+  author    = {Qin, Xu and Wang, Zhilin and Bai, Yuanchao and Xie, Xiaodong and Jia, Huizhu},
+  booktitle = {AAAI Conference on Artificial Intelligence},
+  year      = {2020},
+  eprint    = {1911.07559},
+  archivePrefix = {arXiv}
+}
+
+% ---------------------------- Augmentation ----------------------------
+
+@inproceedings{cubuk2019autoaugment,
+  title     = {{AutoAugment}: Learning Augmentation Policies from Data},
+  author    = {Cubuk, Ekin D. and Zoph, Barret and Mane, Dandelion and Vasudevan, Vijay and Le, Quoc V.},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2019},
+  eprint    = {1805.09501},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{cubuk2020randaugment,
+  title     = {{RandAugment}: Practical Automated Data Augmentation with a Reduced Search Space},
+  author    = {Cubuk, Ekin D. and Zoph, Barret and Shlens, Jonathon and Le, Quoc V.},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)},
+  year      = {2020},
+  eprint    = {1909.13719},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{hendrycks2020augmix,
+  title     = {{AugMix}: A Simple Data Processing Method to Improve Robustness and Uncertainty},
+  author    = {Hendrycks, Dan and Mu, Norman and Cubuk, Ekin D. and Zoph, Barret and Gilmer, Justin and Lakshminarayanan, Balaji},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020},
+  eprint    = {1912.02781},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{muller2021trivialaugment,
+  title     = {{TrivialAugment}: Tuning-Free Yet State-of-the-Art Data Augmentation},
+  author    = {M{\"u}ller, Samuel G. and Hutter, Frank},
+  booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2021},
+  eprint    = {2103.10158},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{zhou2021mixstyle,
+  title     = {Domain Generalization with {MixStyle}},
+  author    = {Zhou, Kaiyang and Yang, Yongxin and Qiao, Yu and Xiang, Tao},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2021},
+  eprint    = {2104.02008},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{huang2017adain,
+  title     = {Arbitrary Style Transfer in Real-Time with Adaptive Instance Normalization},
+  author    = {Huang, Xun and Belongie, Serge},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017},
+  eprint    = {1703.06868},
+  archivePrefix = {arXiv}
+}
+
+% ---------------------------- DG / robustness / TTA ----------------------------
+
+@inproceedings{tobin2017domainrandomization,
+  title     = {Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World},
+  author    = {Tobin, Josh and Fong, Rachel and Ray, Alex and Schneider, Jonas and Zaremba, Wojciech and Abbeel, Pieter},
+  booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  year      = {2017},
+  eprint    = {1703.06907},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{wang2021tent,
+  title     = {Tent: Fully Test-Time Adaptation by Entropy Minimization},
+  author    = {Wang, Dequan and Shelhamer, Evan and Liu, Shaoteng and Olshausen, Bruno and Darrell, Trevor},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2021},
+  eprint    = {2006.10726},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{tarvainen2017meanteacher,
+  title     = {Mean Teachers Are Better Role Models: Weight-Averaged Consistency Targets Improve Semi-Supervised Deep Learning Results},
+  author    = {Tarvainen, Antti and Valpola, Harri},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2017},
+  eprint    = {1703.01780},
+  archivePrefix = {arXiv}
+}
+
+@misc{sohn2020stac,
+  title  = {A Simple Semi-Supervised Learning Framework for Object Detection},
+  author = {Sohn, Kihyuk and Zhang, Zizhao and Li, Chun-Liang and Zhang, Han and Lee, Chen-Yu and Pfister, Tomas},
+  year   = {2020},
+  eprint = {2005.04757},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+% ---------------------------- Adverse-weather detection / benchmarks ----------------------------
+
+@misc{chu2024dyolo,
+  title  = {{D-YOLO}: A Robust Framework for Object Detection in Adverse Weather Conditions},
+  author = {Chu, Zihan},
+  year   = {2024},
+  eprint = {2403.09233},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@article{hnewa2021rainreview,
+  title   = {Object Detection Under Rainy Conditions for Autonomous Vehicles: A Review of State-of-the-Art and Emerging Techniques},
+  author  = {Hnewa, Mazin and Radha, Hayder},
+  journal = {IEEE Transactions on Intelligent Transportation Systems (T-ITS)},
+  year    = {2021},
+  eprint  = {2006.16471},
+  archivePrefix = {arXiv},
+  note    = {Confirm venue}
+}
+
+@misc{pettersen2026robustness,
+  title  = {Robustness of Object Detection of Autonomous Vehicles in Adverse Weather Conditions},
+  author = {Pettersen, Fox and Zhu, Hong},
+  year   = {2026},
+  eprint = {2602.12902},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@misc{aryashad2025filters,
+  title  = {From Filters to {VLMs}: Benchmarking Defogging Methods Through Object Detection and Segmentation Performance},
+  author = {Aryashad, Ardalan and Razmara, Parsa and Mahjoub, Amin and Azizi, Seyedarmin and Salmani, Mahdi and Firouzkouhi, Arad},
+  year   = {2025},
+  eprint = {2510.03906},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@misc{shapiro2025bridging,
+  title  = {Bridging Clear and Adverse Driving Conditions},
+  author = {Shapiro, Yoel and Showgan, Yahia and Mullick, Koustav},
+  year   = {2025},
+  eprint = {2508.13592},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@misc{yao2024nightped,
+  title  = {Nighttime Pedestrian Detection Based on Fore-Background Contrast Learning},
+  author = {Yao, He and Zhang, Yongjun and Jian, Huachun and Zhang, Li and Cheng, Ruzhong},
+  year   = {2024},
+  eprint = {2408.03030},
+  archivePrefix = {arXiv},
+  note   = {Preprint}
+}
+
+@inproceedings{piroli2023rain3d,
+  title     = {Towards Robust 3D Object Detection in Rainy Conditions},
+  author    = {Piroli, Aldi and Dallabetta, Vinzenz and Kopp, Johannes and Walessa, Marc and Meissner, Daniel and Dietmayer, Klaus},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  year      = {2023},
+  eprint    = {2310.00944},
+  archivePrefix = {arXiv},
+  note      = {Confirm venue}
+}

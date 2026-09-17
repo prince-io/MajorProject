@@ -1,0 +1,11 @@
+path: /home/ps/Desktop/major_project/data/yolo/acdc
+train: /home/ps/Desktop/major_project/splits/acdc_cv5/fold3_train.txt
+val: /home/ps/Desktop/major_project/splits/acdc_cv5/fold3_test.txt
+nc: 6
+names:
+  0: person
+  1: rider
+  2: car
+  3: truck
+  4: bus
+  5: bicycle
