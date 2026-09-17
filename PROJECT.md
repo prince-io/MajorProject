@@ -86,7 +86,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 |---|---|---|---|
 | S0 | clear BDD, no aug | floor | **done** |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | **done** |
-| S2 | S1 + generic photometric degradation (offline dataset) | non-weather sensor degradation | planned |
+| S2 | S1 + generic photometric degradation (offline dataset; blur deferred) | non-weather sensor degradation | **implemented** (dataset built) |
 | S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | planned |
 | S4 | S1 + Fourier Domain Adaptation (online), ACDC-train style (unlabeled) | appearance adaptation | planned (prior global-FDA run failed) |
 | S5 | S1 + physics-structured, ACDC-calibrated synthesis (offline dataset) | principled weather simulation | planned |
@@ -103,9 +103,13 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 - In-training `val` = `bdd_src_val.txt` (clear) for every stage, so `best.pt` selection is consistent and never touches ACDC.
 - The 1:1 clear:synthetic ratio is pre-registered; a ratio sweep is a later ablation.
 
+**S2 (finalized 2026-09-17).** *A/B split of S1's 10k:* **A = 5k clear**, **B = 5k clear**. S1 = A + B (already trained) is therefore the **exact control — no S1 rerun**. S2 trains on **A (clear, referenced from `bdd_src`) + B (degraded)**, so both stages see the same scenes/objects/labels/count and only the appearance of the B half differs. Operators (offline, geometry-preserving): **brightness ×0.7–1.3, contrast ×0.7–1.2, gamma 0.8–1.4, saturation ×0.6–1.1, additive Gaussian noise σ 0–10**; **blur deferred** to S3/S5 (so S2 is purely *photometric*, not "generic image degradation"). Each B image gets a **random 1–3 ops (without replacement)** in fixed order brightness→contrast→gamma→saturation→noise (noise last), seeded by `hash(filename)+42` (order-independent). Every op/param is logged to `synthesis_log.csv`; labels are copied byte-identically (`shutil.copy2`). Outputs: `data/yolo/bdd_s2/`, `splits/bdd_s2_train.txt`, `configs/bdd_s2.yaml` (val = `bdd_src_val.txt`); the fixed halves are recorded as `splits/bdd_src_A_clear.txt` / `splits/bdd_src_B_source.txt` (seed 42). S2 is **zero-shot DG** (no ACDC at all).
+
+**S2 status (2026-09-17).** Implemented in `src/synth/{common,photometric,build_dataset,inspect_s2}.py`; A/B halves at `splits/bdd_src_A_clear.txt` / `bdd_src_B_source.txt` (5,000 each, disjoint, union = 10k). Generated `data/yolo/bdd_s2/` = 5,000 degraded B images + 5,000 referenced clear (manifest `splits/bdd_s2_train.txt`, config `configs/bdd_s2.yaml`). Inspector PASS: labels 5000/5000 byte-identical, 0 synthetic equal to source, 1 already-degenerate source exempt (guard resampled 1 image). Full generation ~2–3 min (8 workers); determinism verified.
+
 **S3 vs S5 (must not collapse into each other).** S3 uses hand-set parameters. S5 fits the same physical model families (Koschmieder fog / dark-channel transmission, rain streaks, snow particles, night illumination) to **measured ACDC-train statistics** (per-condition colour mean/std, RMS contrast, dark-channel haze, gradient/noise energy; unlabeled) — this calibration is the principled separation and the basis of S5's potential novelty.
 
-**S4 (FDA).** Faithful reference `low_freq_mutate` [Yang & Soatto, CVPR 2020], applied online; target pool = `splits/acdc_pool_unlabeled.txt` (ACDC official train minus the design split). β ∈ **{0.05, 0.10}**, headline = best β, reported honestly even if below S1 (the prior global-FDA run gave 0.273 at β=0.01 and 0.255 at β=0.05 vs S1 0.269).
+**S4 (FDA).** Faithful reference `low_freq_mutate` [Yang & Soatto, CVPR 2020], applied online; target pool = `splits/acdc_pool_unlabeled.txt` (ACDC official train minus the design split). β ∈ **{0.05, 0.10}** *(provisional — the `PLAN.md` review recommends restoring β=0.01; to be decided when S4 is built)*, headline = best β, reported honestly even if below S1 (the prior global-FDA run gave 0.273 at β=0.01 and 0.255 at β=0.05 vs S1 0.269).
 
 **Implementation plan (next phase; no code yet).**
 - `src/synth/` (new package, needs its own `AGENTS.md`): `photometric.py` (S2), `weather.py` (S3), `physics.py` (S5), `calibrate.py` (measured stats → `results/analysis/synth_stats.json`), `build_dataset.py` (writes `data/yolo/bdd_<stage>`, manifests, configs), `inspect_synth.py`.
@@ -264,7 +268,9 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-17 | Relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug`; S4 β ∈ **{0.05, 0.10}** | Uniform S-ladder IDs; weights preserved and eval re-run because `aggregate.py` groups by the JSON `run` field. FDA β restricted to the two retained values (β=0.01 dropped) |
 | 2026-09-17 | **Phase 0 executed:** baselines renamed, 26 evals re-run, aggregate/visualize regenerated | Re-eval is bit-identical to the pre-rename numbers (S0 0.2007, S1 0.2690, T1 0.2162, T1aug 0.3196), confirming reproducibility |
 | 2026-09-17 | **Phase 1 executed:** design split `acdc_design.txt` (400 = 100/weather, seed 42) + unlabeled pool `acdc_pool_unlabeled.txt` (1,200 = 300/weather); `build_splits.py`/`write_configs.py`/`materialize.py` cleaned of LOO/5k/smoke | Leakage control: the 406 official val is the only scored set; design ∪ pool = official train (1,600, unchanged); all kept manifests byte-identical (hash guard passed) |
+| 2026-09-17 | **S2 plan finalized:** split S1's 10k into A (5k clear) + B (5k); S2 = A clear + B degraded; ops brightness/contrast/gamma/saturation/Gaussian-noise (narrow ranges), 1–3 random per image, fixed order, filename-hash seed; **blur deferred**; labels copied | Resolves the S1-vs-S2 budget confound: **S1 (A+B clear) is the exact control**, no S1 rerun; only the appearance of the B half changes. S2 stays purely photometric so the S2-vs-S3/S5 comparison isolates weather structure |
 | 2026-09-17 | **Literature knowledge hub created** at `paper/literature/` (`references.md` + `references.bib` + 9 topic notes), metadata verified via the arXiv API | Rebuilds the deleted prior-work notes to a citable standard for the manuscript; explicitly flags the old "MIC" and "ViSGA" tags as unverified |
+| 2026-09-17 | **S2 implemented:** `src/synth/` (photometric ops, generic stage builder, inspector) + `data/yolo/bdd_s2/` (5,000 degraded B + 5,000 referenced clear); `configs/bdd_s2.yaml`; A/B halves recorded | S2 dataset ready; pure photometric (blur deferred); labels byte-identical; deterministic; a guard prevents degrading usable sources into near-black images (already-degenerate sources exempt) |
 
 ## 11. Open questions
 

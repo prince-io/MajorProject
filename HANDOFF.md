@@ -80,6 +80,7 @@ experiments have been run since; implementation is the next phase.**
 ### Generated artifacts (never write inside `datasets/`)
 - `data/yolo/bdd_src` — 12,000 images / 12,000 labels.
 - `data/yolo/acdc` — 2,006 images / 2,006 labels (0 orphans).
+- `data/yolo/bdd_s2` — 5,000 degraded B images / 5,000 labels (S2); the 5,000 clear A images are referenced from `bdd_src` (not copied). Manifest `splits/bdd_s2_train.txt`, config `configs/bdd_s2.yaml`.
 - `splits/` — manifests are the source of truth for every split: `bdd_src_{train,val}`, `acdc_cv5/fold0..4`, `acdc_official_{train,val}` (1,600/406), `acdc_design` (400 = 100/weather), `acdc_pool_unlabeled` (1,200 = 300/weather), `acdc_perweather/*`.
 - `configs/` — baseline Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`).
 
@@ -127,7 +128,7 @@ training data/augmentation changes.
 |---|---|---|---|
 | S0 | clear BDD, no aug | floor | done |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | done |
-| S2 | S1 + generic photometric degradation (offline) | sensor degradation | planned |
+| S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **implemented** |
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | planned |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated physics synthesis (offline) | principled weather sim | planned |
@@ -141,6 +142,16 @@ fixed **10k = 5k clear + 5k synthetic**, seed 42 (synthetic half generated one-p
 from the remaining 5k clear images; labels byte-copied). In-training `val` =
 `bdd_src_val.txt` for all stages (consistent `best.pt` selection, no ACDC leakage).
 1:1 ratio pre-registered.
+
+**S2 (finalized 2026-09-17).** A/B split of S1's 10k: **A = 5k clear**, **B = 5k clear**;
+**S1 = A+B is the exact control (no S1 rerun)**. S2 = A clear (referenced from `bdd_src`) +
+B degraded. Ops (offline, geometry-preserving): brightness ×0.7–1.3, contrast ×0.7–1.2,
+gamma 0.8–1.4, saturation ×0.6–1.1, additive Gaussian noise σ 0–10; **blur deferred** to
+S3/S5. Per image: random 1–3 ops (no replacement), fixed order brightness→contrast→gamma→
+saturation→noise, seed = `hash(filename)+42`; ops logged to `synthesis_log.csv`; labels
+copied byte-identically. Halves recorded as `splits/bdd_src_A_clear.txt` /
+`splits/bdd_src_B_source.txt`. Outputs: `data/yolo/bdd_s2/`, `splits/bdd_s2_train.txt`,
+`configs/bdd_s2.yaml` (val = `bdd_src_val.txt`). S2 is **zero-shot DG**.
 
 **S3 vs S5.** S3 = hand-set parameters; S5 = same physical models with parameters fitted to
 **measured ACDC-train statistics** (colour mean/std, RMS contrast, dark-channel haze,
@@ -170,6 +181,10 @@ scorer and is scored once per stage.
 - **S0–S6 design documented** in `PROJECT.md` §5/§6/§9/§10 and this file. Decisions locked:
   offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 calibrated physics, design
   split, relabel to S/T IDs.
+- **S2 implemented (2026-09-17):** `src/synth/{common,photometric,build_dataset,inspect_s2}.py`;
+  A/B halves recorded; `data/yolo/bdd_s2/` generated (5,000 degraded B + 5,000 referenced
+  clear). Inspector PASS (labels 5000/5000 byte-identical, 0 synthetic==source, 1 already-
+  degenerate source exempt); deterministic; smoke artifacts removed. **Next: train + eval S2.**
 - **Nothing implemented yet.** `src/synth/` and `src/aug/fda.py` are planned, not written.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
@@ -196,12 +211,14 @@ scorer and is scored once per stage.
      split only vs BDD-only = zero-shot); see `paper/literature/09_gaps_and_positioning.md`.
    - **Keep `paper/literature/` current**: verify venues marked `confirm`, resolve or drop the
      "MIC"/"ViSGA" tags, and confirm `shapiro2025bridging`/PAGen do not already cover our angle.
-3. **Build `src/synth/`** (with its own `AGENTS.md`): photometric, weather, physics,
-   calibration, dataset builder, inspector.
-4. **Generate offline datasets** for S2/S3/S5/S6a/S6b; verify label invariance + inspect.
-5. **S4 FDA online** (`src/aug/fda.py` + minimal trainer hook) with a fidelity check.
-6. **Train S2–S6** (1 seed, official val), then `aggregate.py` + `visualize.py`.
-7. Later: hybrid S6c, ratio ablations, supervised fine-tune, leave-one-domain-out, paper.
+3. ~~**Build S2**~~ — **done 2026-09-17** (`src/synth/` + `data/yolo/bdd_s2/`; inspector PASS,
+   determinism verified). Re-run with `python src/synth/build_dataset.py --stage s2 --jobs 8`.
+4. **Train + eval S2 (next):** same command as S1 with `--data configs/bdd_s2.yaml`; eval on ACDC
+   official val per weather/class; inspect failures on the design split (never train/score).
+   **S1 is the exact control (no rerun).**
+5. **Then S3 → S5 → S6a/S6b** (reuse the dataset builder); **S4 FDA online**
+   (`src/aug/fda.py` + trainer hook) — β chosen when we reach S4.
+6. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
 
@@ -219,10 +236,16 @@ python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
 python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
   --epochs 80 --batch 32 --seed 42 --aug default --exp S1
 
-# --- Study stages (planned) ---
-# S2/S3/S5/S6: train on pre-generated offline datasets
+# --- S2 (built 2026-09-17; training is the next step) ---
+python src/synth/build_dataset.py --stage s2 --jobs 8      # regenerate dataset
+python src/synth/inspect_s2.py --dataset-name bdd_s2       # validate + preview
 python src/train.py --data configs/bdd_s2.yaml --model yolov8n.pt \
   --epochs 80 --batch 32 --seed 42 --aug default --exp S2
+python src/eval.py --weights results/experiments/S2/train/weights/best.pt \
+  --data configs/acdc_official.yaml --name S2_acdc_official --per-weather --exp S2
+
+# --- Study stages (later) ---
+# S3/S5/S6: same builder, other stage modules; S4: online FDA (trainer hook)
 # S4: online FDA (trainer hook)
 # python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
 #   --epochs 80 --batch 32 --seed 42 --aug fda --beta 0.05 \
@@ -289,6 +312,7 @@ python src/aggregate.py && python src/visualize.py
 
 ## 12. Open questions
 
+- **S4 FDA β set** — whether to restore β=0.01; decide when S4 is built.
 - **S5 calibration protocol** (ACDC-train stats vs design split vs BDD-only) — decide before S5 runs.
 - Resolve or drop the "MIC"/"ViSGA" tags in `paper/literature/09`.
 - Whether S6c earns its extra run.

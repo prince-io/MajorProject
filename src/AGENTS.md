@@ -25,7 +25,7 @@
 - Multi-run configs (e.g. T1, future F0/F1) get one experiment dir per run: `--exp <ID>_<run>` for training, `--name <ID>_acdc_<run>` for eval, so `aggregate.py` groups them under `<ID>_acdc`.
 - `aggregate.py` scans `results/experiments/*/eval/*.json`, groups by experiment (stripping `_official`/`_foldN`), computes mean±std across folds, and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
 - `visualize.py` writes per-experiment figures (`training_curves.png`, `bars_*.png`), cross-experiment comparisons, and a `class_weather_<exp>.png` heatmap under `results/summary/figures/`.
-- Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.
+- Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → `synth/build_dataset.py --stage <s>` → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.
 
 ## Work Guidance
 
@@ -41,7 +41,8 @@
 - `python src/data/prune_labels.py --dry-run` reports 0 orphan labels for both datasets.
 - `splits/` sizes: BDD train/val 10,000/2,000; ACDC official train/val 1,600/406; ACDC 5-fold (1,600/406 per fold); design 400 (100/weather); pool 1,200 (300/weather). Design ∪ pool = official train, design ∩ val = ∅.
 - No retired split/config tokens (`train_5k`, `smoke`, `acdc_loo`, `holdout_`) remain in `splits/`, `configs/`, or `src/`.
+- `python src/synth/inspect_s2.py --dataset-name bdd_s2` passes (labels byte-identical, no synthetic image equals its source); `splits/bdd_src_A_clear.txt`/`bdd_src_B_source.txt` are disjoint 5,000 each and their union is `bdd_src_train.txt`.
 
 ## Child DOX Index
 
-- None.
+- `synth/AGENTS.md` - offline S2-S6 dataset synthesis (photometric/weather/physics transforms on the fixed B half).
