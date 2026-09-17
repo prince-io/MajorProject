@@ -53,10 +53,10 @@ experiments have been run since; implementation is the next phase.**
 - **`rider` head is randomly initialized** (no COCO match) — document in methods.
 - **Primary eval:** **official split, 1 training/config, 1 seed** —
   test = ACDC official val (`splits/acdc_official_val.txt`, 406), per-weather/per-class.
-  Study mapping: **S0 = B0 0.201, S1 = B2 0.269, T1 = B1 0.216, T1aug = B1aug 0.320**.
-  B0/B1/B2 5-fold kept as supplementary only.
+  Baselines (relabeled 2026-09-17): **S0 0.201, S1 0.269, T1 0.216, T1aug 0.320**.
+  S0/S1/T1 5-fold kept as supplementary only.
 - **Study framing:** S0–S6 comparative study; **S1 = anchor**.
-- **Experiment IDs:** relabel `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` on execution.
+- **Experiment IDs:** relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` (2026-09-17; dirs are now S0/S1/T1_*/T1aug_*).
 - **Synthetic data budget:** fixed **10k = 5k clear + 5k synthetic**, seed 42.
 - **Synthesis implementation:** **offline** pre-generated datasets; S4 FDA stays online.
 - **Leakage control:** 400-image ACDC **design split**; official val scored once.
@@ -94,19 +94,19 @@ split building and training.
 
 ---
 
-## 5. Baseline ladder (mAP@50) — becomes S0/S1 and T1/T1aug
+## 5. Baseline ladder (mAP@50)
 
-| Study ID | Physical dir | Recipe | Official (primary) | 5-fold | In-domain |
-|---|---|---|---|---|---|
-| **S0** | `B0` | BDD no-aug — **floor** | **0.201** | 0.213 ± 0.011 | 0.376 |
-| T1 | `B1` | ACDC labels, no aug | 0.216 | 0.254 ± 0.020 | — |
-| **T1aug** | `B1aug` | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
-| **S1** | `B2` | BDD + standard aug — **anchor** | **0.269** | 0.286 ± 0.014 | 0.491 |
+| Study ID | Recipe | Official (primary) | 5-fold | In-domain |
+|---|---|---|---|---|
+| **S0** | BDD no-aug — **floor** | **0.201** | 0.213 ± 0.011 | 0.376 |
+| T1 | ACDC labels, no aug | 0.216 | 0.254 ± 0.020 | — |
+| **T1aug** | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
+| **S1** | BDD + standard aug — **anchor** | **0.269** | 0.286 ± 0.014 | 0.491 |
 
 ### Key findings (all in `PROJECT.md` §9)
-- **Augmentation, not target labels, is the lever.** B1 (labels, no aug) 0.254 ≈ B0 0.213;
-  B1aug (labels + aug) 0.383. The tiny target set needs regularization.
-- **S1/S2 (standard aug) closes ~43% of the domain gap** (5-fold 0.213 → 0.286 of the 0.170
+- **Augmentation, not target labels, is the lever.** T1 (labels, no aug) 0.254 ≈ S0 0.213;
+  T1aug (labels + aug) 0.383. The tiny target set needs regularization.
+- **S1 (standard aug) closes ~43% of the domain gap** (5-fold 0.213 → 0.286 of the 0.170
   to the ceiling) and **beats T1**. Headroom for a method (official, primary):
   **T1aug − S1 = 0.320 − 0.269 = +0.051** (5-fold supplementary: +0.097).
 - **Remaining headroom is localized.** Closed by S1: fog 79%, rain 66%, night 47%,
@@ -125,8 +125,8 @@ training data/augmentation changes.
 
 | ID | Training data (10k) | Purpose | Status |
 |---|---|---|---|
-| S0 | clear BDD, no aug | floor | done (`B0`) |
-| S1 | clear BDD + Ultralytics defaults | **anchor** | done (`B2`) |
+| S0 | clear BDD, no aug | floor | done |
+| S1 | clear BDD + Ultralytics defaults | **anchor** | done |
 | S2 | S1 + generic photometric degradation (offline) | sensor degradation | planned |
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | planned |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
@@ -134,7 +134,7 @@ training data/augmentation changes.
 | S6a | best fixed combination | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
 | S6c | per-condition policy (optional) | custom policy | optional |
-| T1/T1aug | ACDC labels, no aug / + defaults | reference / ceiling | done (`B1`/`B1aug`) |
+| T1/T1aug | ACDC labels, no aug / + defaults | reference / ceiling | done |
 
 **Dataset construction (S2/S3/S5/S6).** Offline datasets under `data/yolo/bdd_<stage>/`;
 fixed **10k = 5k clear + 5k synthetic**, seed 42 (synthetic half generated one-per-source
@@ -160,8 +160,9 @@ scorer and is scored once per stage.
 
 ## 7. Where we are now
 
-- **Baselines locked.** S0 (`B0`) and S1 (`B2`) exist plus the in-domain references
-  (`B1`/`B1aug`). The full data pipeline is reproducible and the tracker is current.
+- **Baselines locked and relabeled.** `S0` (floor), `S1` (anchor), `T1`/`T1aug` (in-domain
+  reference/ceiling). Phase 0 done: dirs renamed, 26 evals re-run (bit-identical numbers),
+  `aggregate.py`/`visualize.py` regenerated with S/T names.
 - **S0–S6 design documented** in `PROJECT.md` §5/§6/§9/§10 and this file. Decisions locked:
   offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 calibrated physics, design
   split, relabel to S/T IDs.
@@ -173,8 +174,7 @@ scorer and is scored once per stage.
   It rebuilds the deleted prior-work notes and flags the old "MIC"/"ViSGA" tags as unverified.
 - **`PLAN.md` (root)** is the raw peer-review conversation; `PROJECT.md` is authoritative
   where they differ (notably: ACDC test has **no GT**, so official val is the scorer).
-- **`T1`/`T1aug` naming is decided** (S4 β locked to {0.05, 0.10}); the physical dirs are
-  renamed during Phase 0.
+- **`T1`/`T1aug` naming and the S4 β list ({0.05, 0.10}) are locked.**
 - **Deferred cleanup (intentionally left as-is):** `PLAN.md`; `splits/acdc_perweather/*`
   (currently unused); the retired LOO/5k/smoke emissions in `build_splits.py` /
   `write_configs.py` (Phase 1 code cleanup); `data/yolo/**/*.cache` (Ultralytics speed
@@ -184,8 +184,8 @@ scorer and is scored once per stage.
 
 ## 8. Next steps (in order)
 
-1. **Relabel baselines (Phase 0):** rename dirs `B0→S0`, `B2→S1`, `B1*→T1*`, `B1aug*→T1aug*`;
-   re-run `eval.py` with new `--name`s; regenerate `results/summary/`. No retraining.
+1. ~~**Relabel baselines (Phase 0)**~~ — **done 2026-09-17** (dirs renamed, 26 evals re-run,
+   aggregate/visualize regenerated; numbers bit-identical).
 2. **Lock splits (Phase 1):** add `acdc_design.txt` and `acdc_pool_unlabeled.txt`; clean
    `src/data/build_splits.py` / `write_configs.py` to the current split set.
    - **Decide the S5 calibration rule** before S5 runs (ACDC-train stats = mild UDA vs design
@@ -204,8 +204,8 @@ scorer and is scored once per stage.
 ## 9. Command recipes
 
 ```bash
-# --- Phase 0: relabel baselines (no retraining) ---
-# (rename dirs, then re-eval; aggregate groups by the JSON "run" field)
+# --- Phase 0: relabel baselines (DONE 2026-09-17; kept for reference) ---
+# aggregate groups by the JSON "run" field, so re-eval with the new --name was required
 python src/eval.py --weights results/experiments/S1/train/weights/best.pt \
   --data configs/acdc_official.yaml --name S1_acdc_official --per-weather --exp S1
 
@@ -266,6 +266,8 @@ python src/aggregate.py && python src/visualize.py
   so they group under `<ID>_acdc`.
 - **Do NOT pass `--per-weather` for BDD in-domain evals** — `eval.py` extracts weather from
   the ACDC path layout and will fail on BDD paths.
+- **`args.yaml` `project` fields reflect the original pre-rename run paths** (e.g. `pilot_B0`,
+  `B1_official`) — that is provenance; the directory names (S0/S1/T1*/T1aug*) are authoritative.
 - **`best.pt` for T1/T1aug is selected on the eval split** (in-training `val` = test) —
   mild optimism, acceptable for a bound; state it in the paper.
 - **Fold-spread semantics differ:** S0/S1 fold spread = test-subset variation (one model

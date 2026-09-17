@@ -6,8 +6,8 @@ on per-weather subsets derived from the ACDC image layout. Writes a JSON report 
 
 Usage::
 
-    python src/eval.py --weights results/experiments/B0/train/weights/best.pt \
-        --data configs/acdc_official.yaml --name B0_acdc_official --per-weather --exp B0
+    python src/eval.py --weights results/experiments/S1/train/weights/best.pt \
+        --data configs/acdc_official.yaml --name S1_acdc_official --per-weather --exp S1
 """
 
 from __future__ import annotations

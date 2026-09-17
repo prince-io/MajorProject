@@ -16,12 +16,12 @@
 - All splits are generated with `seed=42` and must remain reproducible.
 - `data/yolo/<dataset>/images/` and `labels/` are generated artifacts; do not hand-edit them.
 - Labels must mirror images exactly (no orphans, no missing). Run `prune_labels.py` after `materialize.py`.
-- `train.py --aug {none,default}` selects the augmentation preset: `none` = B0/B1 baseline, `default` = B1aug/B2 standard augmentation. All prior method/augmentation code was removed on 2026-09-17; only the baseline presets remain.
+- `train.py --aug {none,default}` selects the augmentation preset: `none` = S0/T1 baseline, `default` = T1aug/S1 standard augmentation. All prior method/augmentation code was removed on 2026-09-17; only the baseline presets remain.
 - `train.py` resolves `--project` to an absolute path so relative values cannot nest runs under Ultralytics' default `runs/` dir.
 - `train.py` uses a uniform schedule for every config: `optimizer=auto`, `cos_lr=True`, `patience=30`, `batch=32`. Only augmentation/method varies across configs; never tune hyperparameters per config.
 - `eval.py` writes overall, per-class, and per-weather metrics plus validator artifacts. Use it for every experiment so results are comparable.
 - `train.py`/`eval.py` accept `--exp <ID>`; all artifacts for that experiment land under `results/experiments/<ID>/{train,eval,figures}`. Prefer `--exp` over raw `--project`/`--name`.
-- Multi-run configs (e.g. B1, future F0/F1) get one experiment dir per run: `--exp <ID>_<run>` for training, `--name <ID>_acdc_<run>` for eval, so `aggregate.py` groups them under `<ID>_acdc`.
+- Multi-run configs (e.g. T1, future F0/F1) get one experiment dir per run: `--exp <ID>_<run>` for training, `--name <ID>_acdc_<run>` for eval, so `aggregate.py` groups them under `<ID>_acdc`.
 - `aggregate.py` scans `results/experiments/*/eval/*.json`, groups by experiment (stripping `_official`/`_foldN`), computes mean±std across folds, and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
 - `visualize.py` writes per-experiment figures (`training_curves.png`, `bars_*.png`), cross-experiment comparisons, and a `class_weather_<exp>.png` heatmap under `results/summary/figures/`.
 - Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.

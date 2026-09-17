@@ -19,8 +19,8 @@ from common import EXPERIMENTS_DIR  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Project-wide training schedule. Kept identical across every config (B0, B1, B1aug,
-# B2); only the augmentation preset varies, so comparisons stay controlled.
+# Project-wide training schedule. Kept identical across every config (S0, T1, T1aug,
+# S1); only the augmentation preset varies, so comparisons stay controlled.
 # optimizer=auto is left to Ultralytics (sets lr0=0.001 AdamW); do not hand-set lr0.
 TRAIN_SCHEDULE: dict = {
     "optimizer": "auto",
@@ -28,8 +28,8 @@ TRAIN_SCHEDULE: dict = {
     "pretrained": True,
 }
 
-# Augmentation presets. "none" disables all stochastic transforms (B0 baseline);
-# "default" uses Ultralytics defaults (B2 standard-augmentation baseline).
+# Augmentation presets. "none" disables all stochastic transforms (S0 baseline);
+# "default" uses Ultralytics defaults (S1 standard-augmentation baseline).
 AUG_NONE: dict = {
     "hsv_h": 0.0,
     "hsv_s": 0.0,
@@ -66,7 +66,7 @@ def parse_args() -> argparse.Namespace:
         "--aug",
         choices=("none", "default"),
         default="default",
-        help="Augmentation preset: none (B0/B1), default (B1aug/B2).",
+        help="Augmentation preset: none (S0/T1), default (T1aug/S1).",
     )
     parser.add_argument("--project", default=str(PROJECT_ROOT / "results" / "runs"))
     parser.add_argument("--name", default="train")

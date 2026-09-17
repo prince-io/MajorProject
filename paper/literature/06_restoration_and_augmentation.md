@@ -6,7 +6,7 @@ against what Ultralytics already does (HSV, RandAugment, Mosaic, erasing), other
 confounded with S1. This note fixes that boundary and records the restoration context.
 
 ## A. What S1 already contains (do not duplicate in S2)
-Ultralytics defaults (from the B2 `args.yaml`):
+Ultralytics defaults (from the S1 `args.yaml`, formerly B2):
 - `hsv_h 0.015`, `hsv_s 0.7`, `hsv_v 0.4` → **photometric colour jitter**
 - `auto_augment: randaugment` → a learned policy that **already includes brightness/contrast/
   sharpness ops** [Cubuk et al., CVPRW 2020] — `cubuk2020randaugment`

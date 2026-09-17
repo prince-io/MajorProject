@@ -19,8 +19,8 @@ hand-waved.
   a global colour cast. Across different driving scenes this yields radial/diagonal
   colour banding rather than a clean tint. A clean global style change needs **global colour
   statistics** (DC-only or mean+std / AdaIN), not a square amplitude swap.
-- **Empirical status:** prior B3 runs: β=0.01 → 0.273, β=0.05 → 0.255 (official mAP50) vs
-  S1/B2 0.269. Global FDA did not help. S4 re-runs it under the S-numbering with
+- **  Empirical status:** prior B3 runs: β=0.01 → 0.273, β=0.05 → 0.255 (official mAP50) vs
+  S1 0.269. Global FDA did not help. S4 re-runs it under the S-numbering with
   **β ∈ {0.05, 0.10}** for a fair, documented baseline.
 
 ### FACT [Xu et al., CVPR 2021] — `xu2021fact`

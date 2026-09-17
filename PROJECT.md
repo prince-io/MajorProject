@@ -10,7 +10,7 @@
 > gates** and marked "revised from pre-registered". No stale number, path, or claim is
 > left in place.
 
-- **Status:** Baseline ladder **B0 / B1 / B1aug / B2 complete and locked** (official split, 1 seed). The project now follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. This is a documentation/cleanup checkpoint — **no method code or experiments have been run since the 2026-09-17 baseline-only reset**; implementation is the next phase. The in-domain references are to be relabeled `T1`/`T1aug` on execution.
+- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. No synthesis/method code or new training has run yet; implementation is the next phase.
 - **Last updated:** 2026-09-17 (S0–S6 study documented; baseline-only reset)
 - **Owner:** student
 - **Hardware:** RTX 3050 Laptop, 6 GB VRAM; Python 3.12 `.venv`; PyTorch 2.6.0+cu124; Ultralytics.
@@ -41,7 +41,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | Split policy | Stratified, `seed=42`; ACDC weather-stratified 5-fold | 2026-09-11 |
 | Primary evaluation | Official ACDC split; 1 training per config; seed 42 | 2026-09-14 |
 | Study framing | S0–S6 comparative study; **S1 = Ultralytics defaults = anchor** | 2026-09-17 |
-| Experiment IDs | Relabel `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` on execution (weights preserved) | 2026-09-17 |
+| Experiment IDs | Relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` (weights preserved, eval re-run) | 2026-09-17 |
 | Synthetic data budget | Fixed **10k = 5k clear + 5k synthetic**, seed 42 (compute-matched to S1) | 2026-09-17 |
 | Synthesis implementation | **Offline** pre-generated datasets; S4 (FDA) remains online | 2026-09-17 |
 | Leakage control | 400-image ACDC **design split**; official val scored once | 2026-09-17 |
@@ -84,8 +84,8 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 
 | ID | Training data (10k unless noted) | Purpose | Status |
 |---|---|---|---|
-| S0 | clear BDD, no aug | floor | **done** (physical dir `B0`) |
-| S1 | clear BDD + Ultralytics defaults | **anchor** | **done** (physical dir `B2`) |
+| S0 | clear BDD, no aug | floor | **done** |
+| S1 | clear BDD + Ultralytics defaults | **anchor** | **done** |
 | S2 | S1 + generic photometric degradation (offline dataset) | non-weather sensor degradation | planned |
 | S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | planned |
 | S4 | S1 + Fourier Domain Adaptation (online), ACDC-train style (unlabeled) | appearance adaptation | planned (prior global-FDA run failed) |
@@ -93,9 +93,9 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | S6a | best fixed combination of S2–S5 | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
 | S6c | per-condition policy from design-split inspection | custom policy | optional |
-| T1 / T1aug | ACDC labels, no aug / + Ultralytics defaults | in-domain reference / **ceiling** | **done** (physical dirs `B1` / `B1aug`) |
+| T1 / T1aug | ACDC labels, no aug / + Ultralytics defaults | in-domain reference / **ceiling** | **done** |
 
-**Naming.** The S-ladder is the study's ID scheme. On execution the existing baseline artifacts are relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` (weights preserved; `eval.py` re-run under new `--name` because `aggregate.py` groups by the JSON `"run"` field). Until then the physical directories keep the B-names.
+**Naming (relabeled 2026-09-17).** The S-ladder is the study's ID scheme: `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug`. Weights were preserved and `eval.py` re-run under new `--name` (because `aggregate.py` groups by the JSON `"run"` field). Physical dirs are now `S0`, `S1`, `T1_official`/`T1_foldN`, `T1aug_official`/`T1aug_foldN`.
 
 **Dataset construction (S2 / S3 / S5 / S6).**
 - **Offline** pre-generated datasets under `data/yolo/bdd_<stage>/`, so the training command is identical across stages — **only the training dataset differs**.
@@ -127,18 +127,18 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 - **Primary protocol = the official ACDC split, single training per config, single seed (42).** Source = BDD clear/daytime (10k/2k); target test = **ACDC official val (406)**. Applies to all baselines and to future methods.
 - **Rationale (state in the paper):** the 406 official val is the published, citable benchmark; a single seed is used consistently across methods **and** baselines (no asymmetry).
 - **Leakage control (locked 2026-09-17).** The 406-image official val is the **only final scorer** and is scored once per stage. A **design split** of 400 images (100/condition, stratified from `acdc_official_train.txt`, seed 42; `splits/acdc_design.txt`) is reserved for inspecting failure modes and choosing S6 policies; it is **never trained on, never used as an S4 style source, and never scored**. The S4 target pool is `splits/acdc_pool_unlabeled.txt` (official train minus design = 1,200).
-- **Uncertainty:** none from seeds/folds under the primary protocol; variability is reported via the **per-weather and per-class** breakdown. The existing 5-fold results for B0/B1/B1aug/B2 are kept as supplementary only.
+- **Uncertainty:** none from seeds/folds under the primary protocol; variability is reported via the **per-weather and per-class** breakdown. The existing 5-fold results for S0/T1/T1aug/S1 are kept as supplementary only.
 - **Limitations to state:** single seed, single official split (no CV error bars). The 2,000 unlabeled ACDC test images are unused.
 - Qualitative: before/after detection panels per condition.
-- Comparison targets: S0 (floor), S1 (anchor to beat), T1/T1aug (in-domain reference and ceiling); physical dirs are still `B0`/`B2`/`B1`/`B1aug` until relabeling.
+- Comparison targets: S0 (floor), S1 (anchor to beat), T1/T1aug (in-domain reference and ceiling).
 
 ## 7. Compute and budget
 
 - `imgsz=640`, AMP on; YOLOv8n for all runs (§2).
-- ~1.3 h per 10k-image / 40-epoch run (B0); ~2.5–2.9 h at the 80-epoch aug budget (B1aug, B2). ACDC fine-tunes are minutes.
-- **Observed (B0):** ~3.0 it/s train, ~1:46/epoch + ~7 s val ≈ **1.9 min/epoch**; 40 epochs in 1.26 h; ~3.9 GB VRAM at batch 32.
-- **Observed (B1/B1aug, ACDC ~1.6k imgs):** ~13 min / 40 epochs, ~26 min / 80 epochs; 6 runs each (official + 5 folds).
-- **Observed (B2, 10k imgs / 80 epochs):** 2.70 h.
+- ~1.3 h per 10k-image / 40-epoch run (S0); ~2.5–2.9 h at the 80-epoch aug budget (T1aug, S1). ACDC fine-tunes are minutes.
+- **Observed (S0):** ~3.0 it/s train, ~1:46/epoch + ~7 s val ≈ **1.9 min/epoch**; 40 epochs in 1.26 h; ~3.9 GB VRAM at batch 32.
+- **Observed (T1/T1aug, ACDC ~1.6k imgs):** ~13 min / 40 epochs, ~26 min / 80 epochs; 6 runs each (official + 5 folds).
+- **Observed (S1, 10k imgs / 80 epochs):** 2.70 h.
 - 6 GB constraint: keep batch sizes modest, avoid YOLOv8m unless needed.
 - **Uniform training schedule (all configs):** `optimizer=auto` (AdamW, `lr0=0.001`), `cos_lr=True`, `patience=30`, `batch=32`, `imgsz=640`, AMP on, `seed=42`; **epochs = 40 for no-aug (S0, T1), 80 for augmented (S1, T1aug, S2–S6)**. Only the training data/augmentation varies across configs — no per-config hyperparameter tuning, to keep the comparison controlled. Batch 32 measured at 4.0 GB VRAM.
 - **Projected (S0–S6 study, 1 seed, official split):** S2/S3/S5/S6a/S6b = 5 × ~2.7 h ≈ **13.5 GPU-h**; S4 FDA × 2 β ≈ **~7 GPU-h**; optional S6c ≈ 2.7 h. Plus CPU-only dataset generation (~10–30 min/stage) and per-weather evaluations. Fits comfortably on the single 6 GB GPU.
@@ -172,7 +172,7 @@ Generated outputs (`data/`, `results/`, `paper/`, `configs/`, `src/`) must never
 
 ## 9. Results tracker
 
-Official experiment rows (1 seed 42, official ACDC val). Study mapping: **S0 = B0 (floor)**, **S1 = B2 (anchor to beat)**, **T1 = B1 (in-domain reference)**, **T1aug = B1aug (ceiling)**. Physical directories keep the B-names until the relabel phase (§5).
+Official experiment rows (1 seed 42, official ACDC val). **S0 = floor**, **S1 = anchor to beat**, **T1 = in-domain reference**, **T1aug = ceiling** (relabeled 2026-09-17, §5).
 
 Planned study rows (fill as runs complete):
 
@@ -188,35 +188,35 @@ Planned study rows (fill as runs complete):
 
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
-| B0_in | BDD no-aug → BDD val (in-domain) | 0.376 | 0.207 | 0.511 | 0.374 | 42 | done |
-| B0_zs | BDD no-aug → ACDC 5-fold (zero-shot) | 0.213 ± 0.011 | 0.113 ± 0.004 | 0.370 ± 0.053 | 0.230 ± 0.015 | 42 | done |
-| B0_zs | BDD no-aug → ACDC official val (zero-shot) | 0.201 | 0.108 | 0.401 | 0.202 | 42 | done |
-| B1 | ACDC no-aug → ACDC 5-fold | 0.254 ± 0.020 | 0.136 ± 0.010 | 0.419 ± 0.083 | 0.265 ± 0.016 | 42 | done |
-| B1 | ACDC no-aug → ACDC official val | 0.216 | 0.116 | 0.339 | 0.229 | 42 | done |
-| B1aug | ACDC + default aug → ACDC 5-fold (**ceiling**) | 0.383 ± 0.021 | 0.221 ± 0.012 | 0.580 ± 0.026 | 0.353 ± 0.024 | 42 | done |
-| B1aug | ACDC + default aug → ACDC official val | 0.320 | 0.196 | 0.539 | 0.289 | 42 | done |
-| B2_in | BDD + standard aug → BDD val (in-domain) | 0.491 | 0.287 | 0.678 | 0.445 | 42 | done |
-| B2_zs | BDD + standard aug → ACDC 5-fold (zero-shot) | 0.286 ± 0.014 | 0.161 ± 0.007 | 0.517 ± 0.042 | 0.274 ± 0.019 | 42 | done |
-| B2_zs | BDD + standard aug → ACDC official val (zero-shot) | 0.269 | 0.156 | 0.461 | 0.266 | 42 | done |
+| S0_in | BDD no-aug → BDD val (in-domain) | 0.376 | 0.207 | 0.511 | 0.374 | 42 | done |
+| S0_zs | BDD no-aug → ACDC 5-fold (zero-shot) | 0.213 ± 0.011 | 0.113 ± 0.004 | 0.370 ± 0.053 | 0.230 ± 0.015 | 42 | done |
+| S0_zs | BDD no-aug → ACDC official val (zero-shot) | 0.201 | 0.108 | 0.401 | 0.202 | 42 | done |
+| T1 | ACDC no-aug → ACDC 5-fold | 0.254 ± 0.020 | 0.136 ± 0.010 | 0.419 ± 0.083 | 0.265 ± 0.016 | 42 | done |
+| T1 | ACDC no-aug → ACDC official val | 0.216 | 0.116 | 0.339 | 0.229 | 42 | done |
+| T1aug | ACDC + default aug → ACDC 5-fold (**ceiling**) | 0.383 ± 0.021 | 0.221 ± 0.012 | 0.580 ± 0.026 | 0.353 ± 0.024 | 42 | done |
+| T1aug | ACDC + default aug → ACDC official val | 0.320 | 0.196 | 0.539 | 0.289 | 42 | done |
+| S1_in | BDD + standard aug → BDD val (in-domain) | 0.491 | 0.287 | 0.678 | 0.445 | 42 | done |
+| S1_zs | BDD + standard aug → ACDC 5-fold (zero-shot) | 0.286 ± 0.014 | 0.161 ± 0.007 | 0.517 ± 0.042 | 0.274 ± 0.019 | 42 | done |
+| S1_zs | BDD + standard aug → ACDC official val (zero-shot) | 0.269 | 0.156 | 0.461 | 0.266 | 42 | done |
 
 ### Baseline ladder (mAP@50)
 
 | Run | Recipe | Official (primary) | 5-fold (supplementary) | In-domain |
 |---|---|---|---|---|
-| **B0** | BDD no-aug — **floor** | **0.201** | 0.213 ± 0.011 | 0.376 |
-| B1 | ACDC labels, no aug | 0.216 | 0.254 ± 0.020 | — |
-| **B1aug** | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
-| **B2** | BDD + standard aug | **0.269** | 0.286 ± 0.014 | 0.491 |
+| **S0** | BDD no-aug — **floor** | **0.201** | 0.213 ± 0.011 | 0.376 |
+| T1 | ACDC labels, no aug | 0.216 | 0.254 ± 0.020 | — |
+| **T1aug** | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
+| **S1** | BDD + standard aug | **0.269** | 0.286 ± 0.014 | 0.491 |
 
 **Findings:**
-- **Augmentation, not target labels, is the lever.** B1 (labels, no aug) 0.254 ≈ B0 0.213; B1aug (labels + aug) 0.383. The tiny target set needs regularization.
-- **B2 (standard aug) closes ~43% of the domain gap** (5-fold 0.213 → 0.286 of the 0.170 to the ceiling) and **beats B1**. Headroom for a method (official, primary): **B1aug − B2 = 0.320 − 0.269 = +0.051** (5-fold supplementary: +0.097).
-- **Remaining headroom is localized.** Closed by B2: fog 79%, rain 66%, night 47%, **snow 36%**.
+- **Augmentation, not target labels, is the lever.** T1 (labels, no aug) 0.254 ≈ S0 0.213; T1aug (labels + aug) 0.383. The tiny target set needs regularization.
+- **S1 (standard aug) closes ~43% of the domain gap** (5-fold 0.213 → 0.286 of the 0.170 to the ceiling) and **beats T1**. Headroom for a method (official, primary): **T1aug − S1 = 0.320 − 0.269 = +0.051** (5-fold supplementary: +0.097).
+- **Remaining headroom is localized.** Closed by S1: fog 79%, rain 66%, night 47%, **snow 36%**.
 - **Caveat:** the 5-fold ceiling (0.383) exceeds the official-split ceiling (0.320) — different test sets (official val is harder). The **official split is primary**; 5-fold numbers are supplementary. Never claim 5-fold "would be better".
 
-**Per-class 5-fold mAP50 (B0 → B2 → ceiling):**
+**Per-class 5-fold mAP50 (S0 → S1 → ceiling):**
 
-| class | B0 | B2 | B1aug |
+| class | S0 | S1 | T1aug |
 |---|---|---|---|
 | person | 0.221 | 0.295 | 0.384 |
 | rider | 0.096 | 0.177 | 0.214 |
@@ -227,13 +227,13 @@ Planned study rows (fill as runs complete):
 
 Per class, **truck 0.287 vs ceiling 0.495** and **bus 0.159 vs 0.340** hold most of the remaining headroom, while `car` is nearly closed (0.661 → 0.687).
 
-**Per-weather 5-fold mAP50 (B0 → B2 → ceiling):**
+**Per-weather 5-fold mAP50 (S0 → S1 → ceiling):**
 
 | | fog | rain | snow | night |
 |---|---|---|---|---|
-| B0 | 0.373 | 0.216 | 0.249 | 0.138 |
-| B2 | 0.476 | 0.299 | 0.300 | 0.196 |
-| B1aug | 0.504 | 0.341 | 0.391 | 0.262 |
+| S0 | 0.373 | 0.216 | 0.249 | 0.138 |
+| S1 | 0.476 | 0.299 | 0.300 | 0.196 |
+| T1aug | 0.504 | 0.341 | 0.391 | 0.262 |
 
 Night remains the hardest condition; the method should target night/snow and truck/bus.
 
@@ -261,7 +261,8 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-17 | **Synthesis implemented offline** into fixed `data/yolo/bdd_<stage>` datasets; S4 FDA stays online | Reproducible/inspectable/checksummable, and the training command is identical across stages so the dataset is the only variable. S4 is an adaptation method, kept faithful to reference FDA |
 | 2026-09-17 | **Fixed 10k = 5k clear + 5k synthetic** per stage (seed 42) | Compute-matched to S1 so only data composition changes; 1:1 ratio pre-registered |
 | 2026-09-17 | **S5 = calibrated physics** (parameters fitted to measured ACDC-train statistics) | Keeps S3 (hand-set) and S5 (measured) distinct; uses the unlabeled target legitimately |
-| 2026-09-17 | Relabel `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` on execution; S4 β ∈ **{0.05, 0.10}** | Uniform S-ladder IDs; weights preserved and eval re-run because `aggregate.py` groups by the JSON `run` field. FDA β restricted to the two retained values (β=0.01 dropped) |
+| 2026-09-17 | Relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug`; S4 β ∈ **{0.05, 0.10}** | Uniform S-ladder IDs; weights preserved and eval re-run because `aggregate.py` groups by the JSON `run` field. FDA β restricted to the two retained values (β=0.01 dropped) |
+| 2026-09-17 | **Phase 0 executed:** baselines renamed, 26 evals re-run, aggregate/visualize regenerated | Re-eval is bit-identical to the pre-rename numbers (S0 0.2007, S1 0.2690, T1 0.2162, T1aug 0.3196), confirming reproducibility |
 | 2026-09-17 | **Literature knowledge hub created** at `paper/literature/` (`references.md` + `references.bib` + 9 topic notes), metadata verified via the arXiv API | Rebuilds the deleted prior-work notes to a citable standard for the manuscript; explicitly flags the old "MIC" and "ViSGA" tags as unverified |
 
 ## 11. Open questions
