@@ -1,7 +1,7 @@
 # HANDOFF — Session Resumption Point
 
 > Purpose: a single, self-contained entry point for resuming work in a fresh session.
-> Last updated: **2026-09-17**. Keep this current at each session close.
+> Last updated: **2026-09-19**. Keep this current at each session close.
 > `PROJECT.md` remains the single source of truth for facts, decisions, and results;
 > this file is the operational summary and "where we are right now" pointer.
 > DOX contracts (`AGENTS.md` files) remain the binding work rules — read the relevant
@@ -20,7 +20,8 @@ real ACDC, with **S1 (Ultralytics defaults) as the anchor**. The previous method
 (SM-WCFA, global Fourier Domain Adaptation [Yang & Soatto, CVPR 2020], Direction A / WSM,
 spectral analysis) were removed in the 2026-09-17 baseline-only reset. **S0/S1/T1/T1aug are
 locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690);
-S3 is the next stage.**
+S3's weather-synthesis dataset is built and validated (5k A clear + 5k B weather,
+1,250/condition), with training/eval pending.**
 
 ---
 
@@ -82,17 +83,19 @@ S3 is the next stage.**
 - `data/yolo/bdd_src` — 12,000 images / 12,000 labels.
 - `data/yolo/acdc` — 2,006 images / 2,006 labels (0 orphans).
 - `data/yolo/bdd_s2` — 5,000 degraded B images / 5,000 labels (S2); the 5,000 clear A images are referenced from `bdd_src` (not copied). Manifest `splits/bdd_s2_train.txt`, config `configs/bdd_s2.yaml`.
-- `splits/` — manifests are the source of truth for every split: `bdd_src_{train,val}`, `acdc_cv5/fold0..4`, `acdc_official_{train,val}` (1,600/406), `acdc_design` (400 = 100/weather), `acdc_pool_unlabeled` (1,200 = 300/weather), `acdc_perweather/*`.
-- `configs/` — Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`, `bdd_s2`).
+- `data/yolo/bdd_s3` — 5,000 weather images / 5,000 labels (S3); the 5,000 clear A images are referenced from `bdd_src`. Manifest `splits/bdd_s3_train.txt` (10k), conditions `splits/bdd_s3_conditions.csv` (1,250/condition), config `configs/bdd_s3.yaml`.
+- `splits/` — manifests are the source of truth for every split: `bdd_src_{train,val}`, `acdc_cv5/fold0..4`, `acdc_official_{train,val}` (1,600/406), `acdc_design` (400 = 100/weather), `acdc_pool_unlabeled` (1,200 = 300/weather), `acdc_perweather/*`, `bdd_s2_train`, `bdd_s3_train`.
+- `configs/` — Ultralytics YAMLs (`bdd_src`, `acdc_official`, `acdc_cv5_fold0..4`, `bdd_s2`, `bdd_s3`).
 
 ### Pipeline order
 ```
 convert_acdc.py → convert_bdd.py → build_splits.py → write_configs.py →
-materialize.py → prune_labels.py → synth/build_dataset.py --stage <s> →
+materialize.py → prune_labels.py → synth/build_dataset.py --stage s2 (or synth/build_s3.py) →
 train.py --exp → eval.py --exp → aggregate.py → visualize.py
 ```
-`src/synth/build_dataset.py` generates each stage's offline dataset (implemented for S2;
-S3/S5/S6 add stage modules). S4 is online and skips this step.
+`src/synth/build_dataset.py` generates the S2 dataset and `src/synth/build_s3.py` the S3
+dataset (both via `src/synth/stage_common.py`); S5/S6 add their own builders. S4 is online
+and skips this step.
 
 ---
 
@@ -130,7 +133,7 @@ training data/augmentation changes.
 | S0 | clear BDD, no aug | floor | done |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | done |
 | S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **done** (0.2833) |
-| S3 | S1 + simple weather transforms (offline) | fast weather sim | planned |
+| S3 | S1 + simple weather transforms (offline) | fast weather sim | **built** (awaiting train) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated physics synthesis (offline) | principled weather sim | planned |
 | S6a | best fixed combination | combination | planned |
@@ -153,6 +156,19 @@ saturation→noise, seed = `hash(filename)+42`; ops logged to `synthesis_log.csv
 copied byte-identically. Halves recorded as `splits/bdd_src_A_clear.txt` /
 `splits/bdd_src_B_source.txt`. Outputs: `data/yolo/bdd_s2/`, `splits/bdd_s2_train.txt`,
 `configs/bdd_s2.yaml` (val = `bdd_src_val.txt`). S2 is **zero-shot DG**.
+
+**S3 (built 2026-09-19).** Same A/B harness: **A (5k clear) + B weather-transformed**, one
+condition per image, **balanced 1,250 each** of fog/rain/snow/night, so **S1 is again the
+exact control**. Hand-set, geometry-preserving operators (no ACDC, no blur, uniform depth,
+no mixed conditions, no local lights, no snow accumulation): **fog** = constant-transmission
+Koschmieder `I=J·t+A·(1−t)`, `t∈[0.35,0.70]`; **rain** = directional streak overlay
+(150–500/640² area-scaled, length 10–30 px, slant 70–85°, alpha 0.3–0.5); **snow** = falling
+particles (density 0.02–0.07, radius 2–6 px); **night** = brightness ×0.35–0.60, gamma
+1.0–1.4, warm/cool tint ±5, vignette (γ>1 crushes shadows — `PLAN.md`'s γ<1 lifted them
+into a "dim daytime" artifact). Params pre-registered in `PROJECT.md` §5. Built via
+`src/synth/{stage_common,weather,build_s3,inspect_s3}.py`; outputs `data/yolo/bdd_s3/`,
+`splits/bdd_s3_{train.txt,conditions.csv}`, `configs/bdd_s3.yaml`. Inspector PASS,
+deterministic; per-condition previews `results/summary/figures/synth_preview_bdd_s3_*.png`.
 
 **S3 vs S5.** S3 = hand-set parameters; S5 = same physical models with parameters fitted to
 **measured ACDC-train statistics** (colour mean/std, RMS contrast, dark-channel haze,
@@ -186,8 +202,13 @@ scorer and is scored once per stage.
   PASS; deterministic. **Result (official mAP@50): S2 0.2833 vs S1 0.2690 (+0.0143)**;
   mAP@50-95 0.1650 vs 0.1559 (+0.0091); 5-fold +0.0070 (within ±1.4–1.6 spread); in-domain
   unchanged (0.491→0.492). Gains in **rain + rare classes**; fog/night/snow flat. Paper
-  write-up: `paper/results_notes.md`. **Next: S3 (simple weather).**
-- **S3 and the S4 FDA hook are not written yet.** `src/synth/` currently implements S2; `src/aug/fda.py` is planned. S3 is next.
+  write-up: `paper/results_notes.md`.
+- **S3 implemented + built (2026-09-19):** `src/synth/stage_common.py` (shared harness for
+  S3+), `weather.py` (fog/rain/snow/night), `build_s3.py`, `inspect_s3.py`; all hand-set,
+  geometry-preserving, no ACDC, no blur. Dataset `data/yolo/bdd_s3/` (5k weather + 5k clear
+  A referenced), balanced 1,250/condition; inspector PASS; determinism verified. **S2 code is
+  frozen (append-only per experiment).** **Next: train + eval S3.** The S4 FDA hook
+  (`src/aug/fda.py`) is still planned.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -217,11 +238,13 @@ scorer and is scored once per stage.
    determinism verified). Re-run with `python src/synth/build_dataset.py --stage s2 --jobs 8`.
 4. ~~**Train + eval S2**~~ — **done 2026-09-17** (official mAP@50 0.2833 vs S1 0.2690;
    findings in `PROJECT.md` §9 and `paper/results_notes.md`).
-5. **S3 (next):** simple weather synthesis — add `src/synth/weather.py`, extend
-   `build_dataset.py` for stage `s3` (balanced fog/night/rain/snow 1,250 each), build,
-   inspect, train, eval. Then S5 → S6a/S6b; **S4 FDA** online (`src/aug/fda.py` + hook) —
-   β chosen when we reach S4.
-6. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
+5. ~~**Build S3**~~ — **done 2026-09-19** (`src/synth/{stage_common,weather,build_s3,inspect_s3}.py`
+   + `data/yolo/bdd_s3/`; inspector PASS, determinism verified; params pre-registered in
+   `PROJECT.md` §5). Re-run: `python src/synth/build_s3.py --jobs 8`.
+6. **S3 train + eval (next):** train 80 epochs on `configs/bdd_s3.yaml`, eval on ACDC
+   official per-weather, record vs S1/S2 (commands in §9). Then S5 → S6a/S6b; **S4 FDA**
+   online (`src/aug/fda.py` + hook) — β chosen when we reach S4.
+7. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
 
@@ -247,8 +270,15 @@ python src/train.py --data configs/bdd_s2.yaml --model yolov8n.pt \
 python src/eval.py --weights results/experiments/S2/train/weights/best.pt \
   --data configs/acdc_official.yaml --name S2_acdc_official --per-weather --exp S2
 
-# --- S3 (next): same builder, add src/synth/weather.py and a stage 's3' module ---
-# python src/synth/build_dataset.py --stage s3 --jobs 8 && python src/synth/inspect_s3.py ...
+# --- S3 (dataset built 2026-09-19; training/eval pending) ---
+python src/synth/build_s3.py --jobs 8                     # regenerate dataset (~2.5 min)
+python src/synth/inspect_s3.py --dataset-name bdd_s3      # validate + per-condition previews
+python src/train.py --data configs/bdd_s3.yaml --model yolov8n.pt \
+  --epochs 80 --batch 32 --seed 42 --aug default --exp S3
+python src/eval.py --weights results/experiments/S3/train/weights/best.pt \
+  --data configs/acdc_official.yaml --name S3_acdc_official --per-weather --exp S3
+python src/eval.py --weights results/experiments/S3/train/weights/best.pt \
+  --data configs/bdd_src.yaml --name S3_bdd_val --exp S3   # in-domain (no --per-weather)
 
 # --- S4: online FDA (trainer hook not written yet) ---
 # python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
@@ -272,7 +302,7 @@ python src/aggregate.py && python src/visualize.py
 | `AGENTS.md` (root) | DOX rail; user preferences; Child DOX Index. |
 | `src/common.py` | Shared paths/constants. |
 | `src/data/*.py` | Converters, split builder, config writer, materializer, label pruner. |
-| `src/synth/` | Offline S2–S6 synthesis (S2 implemented: `common.py`, `photometric.py`, `build_dataset.py`, `inspect_s2.py`). |
+| `src/synth/` | Offline S2–S6 synthesis, **append-only per experiment**. S2 (frozen): `common.py`, `photometric.py`, `build_dataset.py`, `inspect_s2.py`. S3: `stage_common.py`, `weather.py`, `build_s3.py`, `inspect_s3.py`. |
 | `src/aug/` | (planned) S4 FDA online hook. |
 | `src/train.py` | Training wrapper; `--aug {none,default}`, `--exp`. |
 | `src/eval.py` | Overall + per-class + per-weather metrics; `--exp`. |
@@ -306,8 +336,17 @@ python src/aggregate.py && python src/visualize.py
 - **Ultralytics writes `.cache` files into label dirs** during validation. They are not
   labels — count only `*.txt` (2,006 ACDC labels, 12,000 BDD labels; `prune_labels.py
   --dry-run` reports 0 orphans).
-- **Synthetic datasets are geometry-preserving** — weather/photometric transforms must never
-  move boxes; verify with `inspect_synth.py` before training.
+- **Synthetic datasets are geometry-preserving** — transforms must never move boxes; inspect
+  with `inspect_s2.py` / `inspect_s3.py` before training.
+- **`src/synth/` code is append-only.** A stage's generator is frozen once its result is
+  locked (S2 = `photometric.py`/`build_dataset.py`/`inspect_s2.py`); later stages add their
+  own modules on `stage_common.py` and must never overwrite an earlier stage's code.
+- **S3 low-signal-source exemption:** a handful of BDD "clear/daytime" sources are very dark
+  (tunnels; mean < 20). Night darkens them to near-black, so they are exempt from the
+  degeneracy guard (`stage_common.SOURCE_MIN_MEAN`) and reported as `source-degenerate`. The
+  builder and inspector share the same rule.
+- **S3 params are pre-registered** in `PROJECT.md` §5; never tune them from ACDC results (that
+  would collapse S3 into S5).
 
 ---
 

@@ -25,7 +25,8 @@
 - Multi-run configs (e.g. T1, future F0/F1) get one experiment dir per run: `--exp <ID>_<run>` for training, `--name <ID>_acdc_<run>` for eval, so `aggregate.py` groups them under `<ID>_acdc`.
 - `aggregate.py` scans `results/experiments/*/eval/*.json`, groups by experiment (stripping `_official`/`_foldN`), computes mean±std across folds, and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
 - `visualize.py` writes per-experiment figures (`training_curves.png`, `bars_*.png`), cross-experiment comparisons, and a `class_weather_<exp>.png` heatmap under `results/summary/figures/`.
-- Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → `synth/build_dataset.py --stage <s>` → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.
+- Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → per-stage synthesis (`synth/build_dataset.py --stage s2`, `synth/build_s3.py`, ...) → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.
+- `src/synth/` experiment code is **append-only**: a stage's generator is frozen once its result is locked (S2 = `photometric.py`/`build_dataset.py`/`inspect_s2.py`); later stages add their own modules (S3 = `weather.py`/`build_s3.py`/`inspect_s3.py`) on the shared `synth/stage_common.py` harness. Never overwrite an earlier stage's code.
 
 ## Work Guidance
 
@@ -42,6 +43,7 @@
 - `splits/` sizes: BDD train/val 10,000/2,000; ACDC official train/val 1,600/406; ACDC 5-fold (1,600/406 per fold); design 400 (100/weather); pool 1,200 (300/weather). Design ∪ pool = official train, design ∩ val = ∅.
 - No retired split/config tokens (`train_5k`, `smoke`, `acdc_loo`, `holdout_`) remain in `splits/`, `configs/`, or `src/`.
 - `python src/synth/inspect_s2.py --dataset-name bdd_s2` passes (labels byte-identical, no synthetic image equals its source); `splits/bdd_src_A_clear.txt`/`bdd_src_B_source.txt` are disjoint 5,000 each and their union is `bdd_src_train.txt`.
+- `python src/synth/inspect_s3.py --dataset-name bdd_s3` passes; `splits/bdd_s3_train.txt` is 10,000 (5,000 `bdd_src` + 5,000 `bdd_s3`); `splits/bdd_s3_conditions.csv` is balanced 1,250/condition; `configs/bdd_s3.yaml` has `nc: 6`.
 
 ## Child DOX Index
 

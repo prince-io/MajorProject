@@ -10,8 +10,8 @@
 > gates** and marked "revised from pre-registered". No stale number, path, or claim is
 > left in place.
 
-- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. **S0/S1/T1/T1aug are locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 is the next stage.**
-- **Last updated:** 2026-09-17 (S0–S6 study documented; baseline-only reset)
+- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. **S0/S1/T1/T1aug are locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 dataset is built and validated (5k A clear + 5k B weather, 1,250/condition; awaiting training).**
+- **Last updated:** 2026-09-19 (S3 weather-synthesis dataset built and inspected; S3 parameters pre-registered)
 - **Owner:** student
 - **Hardware:** RTX 3050 Laptop, 6 GB VRAM; Python 3.12 `.venv`; PyTorch 2.6.0+cu124; Ultralytics.
 - **Raw data:** `datasets/` (read-only).
@@ -46,6 +46,8 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | Synthesis implementation | **Offline** pre-generated datasets; S4 (FDA) remains online | 2026-09-17 |
 | Leakage control | 400-image ACDC **design split**; official val scored once | 2026-09-17 |
 | S5 definition | Physics-structured synthesis **calibrated to measured ACDC-train statistics** | 2026-09-17 |
+| S3 condition allocation | Balanced **1,250 each** fog/rain/snow/night; exactly one condition per image | 2026-09-19 |
+| S3 weather model | Hand-set, geometry-preserving: constant-transmission Koschmieder fog, directional rain streaks, falling snow particles (no accumulation), illumination night; uniform depth; **no blur** | 2026-09-19 |
 
 **Model:** YOLOv8n only, locked for the whole matrix — best compute/coverage tradeoff on 6 GB (S0: ~1.9 min/epoch, 3.9 GB at batch 32). Revisit scale only if results are inconclusive.
 
@@ -87,7 +89,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | S0 | clear BDD, no aug | floor | **done** |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | **done** |
 | S2 | S1 + generic photometric degradation (offline dataset; blur deferred) | non-weather sensor degradation | **done** (mAP@50 0.2833) |
-| S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | planned |
+| S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | **built** (awaiting train) |
 | S4 | S1 + Fourier Domain Adaptation (online), ACDC-train style (unlabeled) | appearance adaptation | planned (prior global-FDA run failed) |
 | S5 | S1 + physics-structured, ACDC-calibrated synthesis (offline dataset) | principled weather simulation | planned |
 | S6a | best fixed combination of S2–S5 | combination | planned |
@@ -103,16 +105,25 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 - In-training `val` = `bdd_src_val.txt` (clear) for every stage, so `best.pt` selection is consistent and never touches ACDC.
 - The 1:1 clear:synthetic ratio is pre-registered; a ratio sweep is a later ablation.
 
-**S2 (finalized 2026-09-17).** *A/B split of S1's 10k:* **A = 5k clear**, **B = 5k clear**. S1 = A + B (already trained) is therefore the **exact control — no S1 rerun**. S2 trains on **A (clear, referenced from `bdd_src`) + B (degraded)**, so both stages see the same scenes/objects/labels/count and only the appearance of the B half differs. Operators (offline, geometry-preserving): **brightness ×0.7–1.3, contrast ×0.7–1.2, gamma 0.8–1.4, saturation ×0.6–1.1, additive Gaussian noise σ 0–10**; **blur deferred** to S3/S5 (so S2 is purely *photometric*, not "generic image degradation"). Each B image gets a **random 1–3 ops (without replacement)** in fixed order brightness→contrast→gamma→saturation→noise (noise last), seeded by `hash(filename)+42` (order-independent). Every op/param is logged to `synthesis_log.csv`; labels are copied byte-identically (`shutil.copy2`). Outputs: `data/yolo/bdd_s2/`, `splits/bdd_s2_train.txt`, `configs/bdd_s2.yaml` (val = `bdd_src_val.txt`); the fixed halves are recorded as `splits/bdd_src_A_clear.txt` / `splits/bdd_src_B_source.txt` (seed 42). S2 is **zero-shot DG** (no ACDC at all).
+**S2 (finalized 2026-09-17).** *A/B split of S1's 10k:* **A = 5k clear**, **B = 5k clear**. S1 = A + B (already trained) is therefore the **exact control — no S1 rerun**. S2 trains on **A (clear, referenced from `bdd_src`) + B (degraded)**, so both stages see the same scenes/objects/labels/count and only the appearance of the B half differs. Operators (offline, geometry-preserving): **brightness ×0.7–1.3, contrast ×0.7–1.2, gamma 0.8–1.4, saturation ×0.6–1.1, additive Gaussian noise σ 0–10**; **blur excluded** from S2 and S3 (deferred to S5; so S2 is purely *photometric*, not "generic image degradation"). Each B image gets a **random 1–3 ops (without replacement)** in fixed order brightness→contrast→gamma→saturation→noise (noise last), seeded by `hash(filename)+42` (order-independent). Every op/param is logged to `synthesis_log.csv`; labels are copied byte-identically (`shutil.copy2`). Outputs: `data/yolo/bdd_s2/`, `splits/bdd_s2_train.txt`, `configs/bdd_s2.yaml` (val = `bdd_src_val.txt`); the fixed halves are recorded as `splits/bdd_src_A_clear.txt` / `splits/bdd_src_B_source.txt` (seed 42). S2 is **zero-shot DG** (no ACDC at all).
 
 **S2 status (2026-09-17).** Implemented in `src/synth/{common,photometric,build_dataset,inspect_s2}.py`; A/B halves at `splits/bdd_src_A_clear.txt` / `bdd_src_B_source.txt` (5,000 each, disjoint, union = 10k). Generated `data/yolo/bdd_s2/` = 5,000 degraded B images + 5,000 referenced clear (manifest `splits/bdd_s2_train.txt`, config `configs/bdd_s2.yaml`). Inspector PASS: labels 5000/5000 byte-identical, 0 synthetic equal to source, 1 already-degenerate source exempt (guard resampled 1 image). Full generation ~2–3 min (8 workers); determinism verified.
 
-**S3 vs S5 (must not collapse into each other).** S3 uses hand-set parameters. S5 fits the same physical model families (Koschmieder fog / dark-channel transmission, rain streaks, snow particles, night illumination) to **measured ACDC-train statistics** (per-condition colour mean/std, RMS contrast, dark-channel haze, gradient/noise energy; unlabeled) — this calibration is the principled separation and the basis of S5's potential novelty.
+**S3 (finalized 2026-09-19).** Same A/B harness: **A (5k clear) + B weather-transformed**, one condition per image, **balanced 1,250 each of fog/rain/snow/night** (seeded assignment; mirrored to ACDC's balanced train/val), so **S1 is again the exact control**. Operators are hand-set and geometry-preserving — no ACDC data, no mixed conditions, no local light sources, no snow accumulation, uniform-depth, **no blur** (blur deferred to S5, keeping S3-vs-S2 about weather structure and S3-vs-S5 about calibration):
+- **fog** — constant-transmission Koschmieder `I = J·t + A·(1−t)` [Koschmieder, 1924]; `t ∈ [0.35, 0.70]`, airlight `A ∈ [180, 235]` with per-channel jitter ≤ 8, desaturation `∈ [0.7, 1.0]`.
+- **rain** — directional streak overlay [Garg & Nayar, TOG 2006]: 150–500 streaks per 640² scaled by pixel area, length 10–30 px, width 1–2 px, slant 70–85° from horizontal, alpha 0.3–0.5, contrast ×0.8–0.95.
+- **snow** — falling particles only: density 0.02–0.07 of pixels, radius 2–6 px, alpha 0.5–0.7, brightness ×1.0–1.15, contrast ×0.85–1.0, desaturation ×0.8–1.0.
+- **night** — illumination model: brightness ×0.35–0.60, gamma 1.0–1.4 (crushes shadows; γ<1 would lift them into a "dim daytime" artifact), warm/cool tint ±5 (BGR-correct), vignette 0.1–0.3.
+
+Outputs: `data/yolo/bdd_s3/` (5,000 weather images; the 5,000 clear A images referenced from `bdd_src`), `splits/bdd_s3_train.txt` (10k), `splits/bdd_s3_conditions.csv`, `configs/bdd_s3.yaml` (val = `bdd_src_val.txt`). Logging: `index.json` + `synthesis_log.csv` record condition and every parameter. S3 is **zero-shot DG** (no ACDC).
+
+**S3 status (2026-09-19).** Implemented per-experiment (S2 frozen) in `src/synth/{stage_common,weather,build_s3,inspect_s3}.py`. Full generation ~2.5 min (8 workers); inspector PASS: 5,000/5,000 labels byte-identical, conditions exactly 1,250 each, each synthetic differs from its source, 5 low-signal sources exempt (documented). Object-visibility (GT-box local-contrast retention, median): fog 0.52, rain 0.90, snow 1.04, night 0.40; night is the most destructive (11.7% of boxes below 0.3), as expected for the hardest condition. Determinism verified (identical image hashes on rebuild). Paper-facing preview grids at `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png`. **Training/eval pending.**
+
+**S3 vs S5 (must not collapse into each other).** S3 uses hand-set parameters. S5 fits the same physical model families (Koschmieder fog / dark-channel transmission, rain streaks, snow particles, night illumination) to **measured ACDC-train statistics** (per-condition colour mean/std, RMS contrast, dark-channel haze, gradient/noise energy; unlabeled) — this calibration is the principled separation and the basis of S5's potential novelty. S3 parameters above are **pre-registered before any ACDC evaluation** and must not be tuned from ACDC results.
 
 **S4 (FDA).** Faithful reference `low_freq_mutate` [Yang & Soatto, CVPR 2020], applied online; target pool = `splits/acdc_pool_unlabeled.txt` (ACDC official train minus the design split). β ∈ **{0.05, 0.10}** *(provisional — the `PLAN.md` review recommends restoring β=0.01; to be decided when S4 is built)*, headline = best β, reported honestly even if below S1 (the prior global-FDA run gave 0.273 at β=0.01 and 0.255 at β=0.05 vs S1 0.269).
 
-**Implementation plan (next phase; no code yet).**
-- `src/synth/` (new package, needs its own `AGENTS.md`): `photometric.py` (S2), `weather.py` (S3), `physics.py` (S5), `calibrate.py` (measured stats → `results/analysis/synth_stats.json`), `build_dataset.py` (writes `data/yolo/bdd_<stage>`, manifests, configs), `inspect_synth.py`.
+**Implementation (append-only per experiment).** Each stage has its own frozen generator, so code is never overwritten once a result is locked: S2 = `photometric.py` + `build_dataset.py` + `inspect_s2.py` (frozen); S3 = `weather.py` + `build_s3.py` + `inspect_s3.py` on the shared `stage_common.py` harness. S5/S6 add their own modules on the same harness; `calibrate.py` (measured stats → `results/analysis/synth_stats.json`) is future. `src/synth/AGENTS.md` is the binding contract.
 - `src/aug/fda.py` + a minimal trainer hook in `src/train.py` for S4 only; fidelity check `max|ours-ref| = 0.0000`.
 - ~~Clean `src/data/build_splits.py` / `write_configs.py`~~ — **done 2026-09-17**: they now emit `bdd_src`, `acdc_cv5`, `acdc_official`, `acdc_perweather`, `acdc_design`, `acdc_pool_unlabeled`; official val kept at 406 and all kept manifests hash-verified.
 
@@ -155,7 +166,7 @@ AGENTS.md             # DOX rail
 configs/              # generated Ultralytics dataset YAMLs
 src/
   data/               # BDD/ACDC -> YOLO conversion, split builders
-  synth/              # (planned) offline S2/S3/S5/S6 photometric + weather synthesis
+  synth/              # offline synthesis: S2 + S3 implemented (per-stage, frozen); S5/S6 planned
   aug/                # (planned) S4 Fourier Domain Adaptation online hook
   train.py  eval.py  aggregate.py  visualize.py  common.py
 scripts/              # class_map.py, inspect_dataset.py
@@ -183,7 +194,7 @@ Study rows (official ACDC val; fill as runs complete):
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
 | S2 | BDD + photometric synthesis (offline) | **0.283** | **0.165** | 0.434 | 0.272 | 42 | **done** |
-| S3 | BDD + simple weather synthesis (offline) | | | | | 42 | planned |
+| S3 | BDD + simple weather synthesis (offline) | | | | | 42 | **built** (awaiting train) |
 | S4 | BDD + FDA (online, best β) → ACDC | | | | | 42 | planned |
 | S5 | BDD + calibrated physics synthesis (offline) | | | | | 42 | planned |
 | S6a | best fixed combination | | | | | 42 | planned |
@@ -274,6 +285,9 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-17 | **Literature knowledge hub created** at `paper/literature/` (`references.md` + `references.bib` + 9 topic notes), metadata verified via the arXiv API | Rebuilds the deleted prior-work notes to a citable standard for the manuscript; explicitly flags the old "MIC" and "ViSGA" tags as unverified |
 | 2026-09-17 | **S2 implemented:** `src/synth/` (photometric ops, generic stage builder, inspector) + `data/yolo/bdd_s2/` (5,000 degraded B + 5,000 referenced clear); `configs/bdd_s2.yaml`; A/B halves recorded | S2 dataset ready; pure photometric (blur deferred); labels byte-identical; deterministic; a guard prevents degrading usable sources into near-black images (already-degenerate sources exempt) |
 | 2026-09-17 | **S2 result:** official mAP@50 **0.2833 vs S1 0.2690** (+0.0143), mAP@50-95 0.1650 vs 0.1559 (+0.0091); 5-fold +0.0070 (within ±1.4–1.6 spread); in-domain unchanged | First stage above the anchor; gains concentrated in **rain + rare classes**; fog/night/snow flat → generic photometrics do not model structured weather (motivates S3/S5). Single-seed caveat: directional, not yet significant. Paper write-up in `paper/results_notes.md` |
+| 2026-09-19 | **S3 parameter set pre-registered** (fog Koschmieder t∈[0.35,0.70]; rain 150–500/640² streaks; snow density 0.02–0.07; night brightness 0.35–0.60, gamma 1.0–1.4) | Locks S3 before any ACDC evaluation so S3 (hand-set) cannot collapse into S5 (ACDC-fitted). Corrected `PLAN.md`'s night γ<1 (which lifts shadows into a "dim daytime" artifact) to γ>1, which crushes shadows. Rain/snow density was raised from an initial 50–200/640² and 0.005–0.02 after a visual intensity sweep (before any ACDC eval), since the first pass read as drizzle/light flurries |
+| 2026-09-19 | **S3 dataset implemented + built:** `stage_common.py`, `weather.py`, `build_s3.py`, `inspect_s3.py`; S2 code frozen | Append-only per-experiment code: each locked stage's generator is preserved and later stages add their own modules. Balanced 1,250/condition; inspector PASS; determinism verified |
+| 2026-09-19 | **Blur boundary corrected:** blur is excluded from both S2 and S3 (was documented "deferred to S3/S5"); it belongs to S5 | `PLAN.md` wrongly assumed S2 included blur; S2 had deferred it. Keeping blur out of S3 preserves the S2-vs-S3 and S3-vs-S5 attributions |
 
 ## 11. Open questions
 

@@ -78,10 +78,30 @@ S2 captures ~28% of the remaining S1→ceiling headroom (official: 0.014 of 0.05
 
 > We introduce a photometric-degradation control (S2) that trains on the same 10,000 scenes as the anchor (S1), replacing half with mild photometric transforms (random subsets of brightness, contrast, gamma, saturation and Gaussian noise). On the official ACDC validation split, S2 improves mAP@50 from 0.269 to 0.283 (+1.4) and mAP@50-95 from 0.156 to 0.165 (+0.9), with no loss of in-domain (clear BDD) accuracy. The improvement is concentrated in rain (+1.2 mAP@50) and rare classes (rider, bus, person), while fog, night and snow remain essentially unchanged — indicating that generic photometric degradation does not model the structured effects that dominate those conditions.
 
+## S3 — simple weather synthesis (zero-shot) — dataset built, results pending
+
+**Design.** Same A/B harness as S2: **A (5,000 clear) + B (5,000 weather)**, one condition per
+image, **balanced 1,250 each** of fog/rain/snow/night, so **S1 (A + B clear) is the exact
+control** and **S2 is the matched generic-photometric comparator**. Transforms are hand-set,
+geometry-preserving, and use **no ACDC data**: constant-transmission Koschmieder fog
+[Koschmieder, 1924]; directional rain streaks [Garg & Nayar, TOG 2006]; falling snow particles
+(no accumulation); illumination night (brightness ×0.35–0.60, γ 1.0–1.4, tint, vignette). No
+blur, no depth, no mixed conditions, no local light sources. Parameters are pre-registered in
+`PROJECT.md` §5.
+
+**Dataset QC (2026-09-19).** 5,000/5,000 labels byte-identical; conditions exactly 1,250 each;
+each synthetic differs from its source; deterministic. GT-box local-contrast retention (median):
+fog 0.52, rain 0.90, snow 1.04, night 0.40. Previews:
+`results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png`.
+
+**Results:** pending training/eval (same 80-epoch command as S1, `--data configs/bdd_s3.yaml`).
+
 ## What's next
 
-- **S3 simple weather** (hand-set rainbow/fog/snow/night), then **S5 calibrated physics**, both offline using the same A/B harness; **S4 FDA** online.
-- Decide per the reviewer: S4 β set (restore 0.01?), primary metric (mAP@50-95), seeds (3 for S1/S6), S5 calibration source.
+- **S3 train + eval** (dataset built 2026-09-19), then **S5 calibrated physics**, both offline
+  using the same A/B harness; **S4 FDA** online.
+- Decide per the reviewer: S4 β set (restore 0.01?), primary metric (mAP@50-95), seeds (3 for
+  S1/S6), S5 calibration source.
 - Add per-class **official** numbers for all stages and the zero-shot vs unlabeled-DA setting column to the main table.
 
 ## Figure / table inventory
@@ -89,3 +109,5 @@ S2 captures ~28% of the remaining S1→ceiling headroom (official: 0.014 of 0.05
 - `results/summary/figures/comparison_overall.png`, `comparison_per_weather.png`, `class_weather_<exp>.png`.
 - `results/summary/{summary.json,per_class.csv,per_class.md}`.
 - `results/summary/figures/synth_preview_bdd_s2.png` (qualitative S2 samples).
+- `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png` (qualitative S3 samples).
+- `results/summary/synth_report_bdd_s3.txt` (S3 inspector report incl. object-visibility).

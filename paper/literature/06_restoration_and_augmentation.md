@@ -42,18 +42,18 @@ as the basis for choosing which transforms mimic which degradation.
 | Operator | Weather it approximates | Stage |
 |---|---|---|
 | Gamma / brightness / contrast | global illumination change | S2, night in S3/S5 |
-| Gaussian blur | scattering/defocus, rain on lens | S2 |
+| Gaussian blur | scattering/defocus, rain on lens | S5 (deferred from S2/S3) |
 | Additive Gaussian/Poisson noise | low light / sensor noise | S2 |
 | JPEG compression | sensor/pipeline artefacts | S2 |
 | Colour-temperature shift | illumination colour | S2, night |
 | CLAHE | local contrast restoration (inverse) | S2 |
-| Haze blend (Koschmieder) | fog | S3/S5 |
-| Streak kernel + motion blur | rain | S3/S5 |
-| Particle sprites + high-freq texture | snow | S3/S5 |
+| Haze blend (Koschmieder) | fog | S3 (constant t) / S5 (fitted) |
+| Streak kernel; motion blur | rain | S3 (streaks) / S5 (motion blur) |
+| Particle sprites; high-freq texture | snow | S3 (particles) / S5 (texture) |
 
 ## Takeaways
 - **S2 definition (locked in docs):** S1 + the operators above minus HSV/RandAugment overlap.
-- All operators must be **geometry-preserving**; verify with `inspect_synth.py` (planned).
+- All operators must be **geometry-preserving**; verify with `inspect_s2.py` / `inspect_s3.py`.
 - Report S2 honestly: if it does not help, that is a result (standard augmentation already
   covers much of the photometric space).
 
