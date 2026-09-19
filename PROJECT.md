@@ -48,6 +48,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | S5 definition | Physics-structured synthesis **calibrated to measured ACDC-train statistics** | 2026-09-17 |
 | S3 condition allocation | Balanced **1,250 each** fog/rain/snow/night; exactly one condition per image | 2026-09-19 |
 | S3 weather model | Hand-set, geometry-preserving: constant-transmission Koschmieder fog, directional rain streaks, falling snow particles (no accumulation), illumination night; uniform depth; **no blur** | 2026-09-19 |
+| Per-experiment eval set | Every stage reports the **S2-matched set**: official ACDC val (primary) + ACDC 5-fold (supplementary) + in-domain BDD (forgetting), all single seed 42 | 2026-09-19 |
 
 **Model:** YOLOv8n only, locked for the whole matrix — best compute/coverage tradeoff on 6 GB (S0: ~1.9 min/epoch, 3.9 GB at batch 32). Revisit scale only if results are inconclusive.
 
@@ -143,6 +144,7 @@ Outputs: `data/yolo/bdd_s3/` (5,000 weather images; the 5,000 clear A images ref
 - **Rationale (state in the paper):** the 406 official val is the published, citable benchmark; a single seed is used consistently across methods **and** baselines (no asymmetry).
 - **Leakage control (locked 2026-09-17).** The 406-image official val is the **only final scorer** and is scored once per stage. A **design split** of 400 images (100/condition, stratified from `acdc_official_train.txt`, seed 42; `splits/acdc_design.txt`) is reserved for inspecting failure modes and choosing S6 policies; it is **never trained on, never used as an S4 style source, and never scored**. The S4 target pool is `splits/acdc_pool_unlabeled.txt` (official train minus design = 1,200).
 - **Uncertainty:** none from seeds/folds under the primary protocol; variability is reported via the **per-weather and per-class** breakdown. The existing 5-fold results for S0/T1/T1aug/S1 are kept as supplementary only.
+- **Per-experiment eval set (locked 2026-09-19).** Every stage S0–S6 reports the **S2-matched eval set** so aggregate/visualize tables stay comparable: (a) **official ACDC val** (406) with per-weather breakdown, `--name <ID>_acdc_official --per-weather` — **primary**; (b) **ACDC 5-fold** (`acdc_cv5_fold0..4`) with per-weather, `--name <ID>_acdc_foldN --per-weather` — **supplementary**; (c) **in-domain BDD val** (`bdd_src_val`, no `--per-weather`), `--name <ID>_in_domain` — forgetting check. Applies to S3, S4, S5, S6a/b/c.
 - **Limitations to state:** single seed, single official split (no CV error bars). The 2,000 unlabeled ACDC test images are unused.
 - Qualitative: before/after detection panels per condition.
 - Comparison targets: S0 (floor), S1 (anchor to beat), T1/T1aug (in-domain reference and ceiling).
@@ -288,6 +290,7 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-19 | **S3 parameter set pre-registered** (fog Koschmieder t∈[0.35,0.70]; rain 150–500/640² streaks; snow density 0.02–0.07; night brightness 0.35–0.60, gamma 1.0–1.4) | Locks S3 before any ACDC evaluation so S3 (hand-set) cannot collapse into S5 (ACDC-fitted). Corrected `PLAN.md`'s night γ<1 (which lifts shadows into a "dim daytime" artifact) to γ>1, which crushes shadows. Rain/snow density was raised from an initial 50–200/640² and 0.005–0.02 after a visual intensity sweep (before any ACDC eval), since the first pass read as drizzle/light flurries |
 | 2026-09-19 | **S3 dataset implemented + built:** `stage_common.py`, `weather.py`, `build_s3.py`, `inspect_s3.py`; S2 code frozen | Append-only per-experiment code: each locked stage's generator is preserved and later stages add their own modules. Balanced 1,250/condition; inspector PASS; determinism verified |
 | 2026-09-19 | **Blur boundary corrected:** blur is excluded from both S2 and S3 (was documented "deferred to S3/S5"); it belongs to S5 | `PLAN.md` wrongly assumed S2 included blur; S2 had deferred it. Keeping blur out of S3 preserves the S2-vs-S3 and S3-vs-S5 attributions |
+| 2026-09-19 | **Per-experiment eval set locked:** every stage reports official (primary) + 5-fold (supplementary) + in-domain BDD, single seed 42, matching S2 | Keeps `aggregate.py`/`visualize.py` tables comparable across stages and gives each stage both the citable official number and the fold-spread/forgetting context |
 
 ## 11. Open questions
 

@@ -57,6 +57,10 @@ S3's weather-synthesis dataset is built and validated (5k A clear + 5k B weather
   test = ACDC official val (`splits/acdc_official_val.txt`, 406), per-weather/per-class.
   Baselines (relabeled 2026-09-17): **S0 0.201, S1 0.269, T1 0.216, T1aug 0.320**.
   S0/S1/T1 5-fold kept as supplementary only.
+- **Per-experiment eval set (locked 2026-09-19):** every stage reports the S2-matched set
+  (seed 42) — official ACDC val (`<ID>_acdc_official`, per-weather; **primary**), ACDC 5-fold
+  (`<ID>_acdc_fold0..4`, per-weather; supplementary), in-domain BDD val (`<ID>_in_domain`, no
+  `--per-weather`; forgetting). Applies to S3, S4, S5, S6a/b/c.
 - **Study framing:** S0–S6 comparative study; **S1 = anchor**.
 - **Experiment IDs:** relabeled `B0→S0`, `B2→S1`, `B1→T1`, `B1aug→T1aug` (2026-09-17; dirs are now S0/S1/T1_*/T1aug_*).
 - **Synthetic data budget:** fixed **10k = 5k clear + 5k synthetic**, seed 42.

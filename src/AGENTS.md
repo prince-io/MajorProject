@@ -21,6 +21,7 @@
 - `train.py` resolves `--project` to an absolute path so relative values cannot nest runs under Ultralytics' default `runs/` dir.
 - `train.py` uses a uniform schedule for every config: `optimizer=auto`, `cos_lr=True`, `patience=30`, `batch=32`. Only augmentation/method varies across configs; never tune hyperparameters per config.
 - `eval.py` writes overall, per-class, and per-weather metrics plus validator artifacts. Use it for every experiment so results are comparable.
+- **Per-experiment eval set (locked 2026-09-19).** Every stage reports the S2-matched set, single seed 42: official ACDC val (`--name <ID>_acdc_official --per-weather`; primary), ACDC 5-fold (`--name <ID>_acdc_fold{0..4} --per-weather`; supplementary), and in-domain BDD val (`--name <ID>_in_domain`, no `--per-weather`; forgetting check). Do not skip the fold or in-domain evals.
 - `train.py`/`eval.py` accept `--exp <ID>`; all artifacts for that experiment land under `results/experiments/<ID>/{train,eval,figures}`. Prefer `--exp` over raw `--project`/`--name`.
 - Multi-run configs (e.g. T1, future F0/F1) get one experiment dir per run: `--exp <ID>_<run>` for training, `--name <ID>_acdc_<run>` for eval, so `aggregate.py` groups them under `<ID>_acdc`.
 - `aggregate.py` scans `results/experiments/*/eval/*.json`, groups by experiment (stripping `_official`/`_foldN`), computes mean±std across folds, and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
