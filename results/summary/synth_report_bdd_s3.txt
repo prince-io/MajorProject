@@ -1,0 +1,17 @@
+dataset: bdd_s3
+images on disk: 5000
+index entries: 5000
+labels byte-identical: 5000/5000
+mean brightness: 103.0 (min 4.7, max 199.9)
+source-degenerate (exempt): 5
+conditions: {'fog': 1250, 'night': 1250, 'rain': 1250, 'snow': 1250}
+object visibility (GT-box local contrast, after/before):
+  fog    boxes= 16902 frac<0.3=0.000 p05=0.367 median=0.523
+  night  boxes= 17232 frac<0.3=0.117 p05=0.266 median=0.403
+  rain   boxes= 17321 frac<0.3=0.000 p05=0.815 median=0.896
+  snow   boxes= 17100 frac<0.3=0.000 p05=0.905 median=1.036
+previews:
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s3_fog.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s3_night.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s3_rain.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s3_snow.png
