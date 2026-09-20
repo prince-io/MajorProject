@@ -21,8 +21,9 @@ real ACDC, with **S1 (Ultralytics defaults) as the anchor**. The previous method
 spectral analysis) were removed in the 2026-09-17 baseline-only reset. **S0/S1/T1/T1aug are
 locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 is
 trained and evaluated (official 0.2741, 5-fold 0.2947 — ties S2 on 5-fold, best BDD-trained
-snow result, below S2 on the official split). Next: **S5 (appearance-calibrated synthesis)** — dataset
-built, awaiting train/eval — then **S5b (calibrated blur ablation)** before S6 design.**
+snow result, below S2 on the official split). S5 (appearance calibration) is trained+evaluated:
+official mAP@50 **0.2939** — best BDD-trained stage (~49% of headroom), 5-fold 0.2951 (tie with
+S2/S3), fog regresses. Next: **S5b (calibrated blur ablation)**, then S6 design.**
 
 ---
 
@@ -128,6 +129,7 @@ and skips this step.
 | **S1** | BDD + standard aug — **anchor** | **0.269** | 0.286 ± 0.014 | 0.491 |
 | S2 | BDD + photometric (offline) | 0.283 | 0.293 ± 0.016 | 0.492 |
 | S3 | BDD + simple weather (offline) | 0.274 | 0.295 ± 0.012 | 0.480 |
+| S5 | BDD + appearance calibration (offline) | **0.294** | 0.295 ± 0.013 | 0.488 |
 
 ### Key findings (all in `PROJECT.md` §9)
 - **Augmentation, not target labels, is the lever.** T1 (labels, no aug) 0.254 ≈ S0 0.213;
@@ -156,7 +158,7 @@ training data/augmentation changes.
 | S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **done** (0.2833) |
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | **done** (0.2741; 5-fold 0.2947) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
-| S5 | S1 + calibrated appearance synthesis (S3 structure + target-appearance match) | target-appearance calib. | **implemented** (awaiting train) |
+| S5 | S1 + calibrated appearance synthesis (S3 structure + target-appearance match) | target-appearance calib. | **done** (0.2939; 5-fold 0.2951) |
 | S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | planned |
 | S6a | best fixed combination | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
@@ -259,13 +261,16 @@ scorer and is scored once per stage.
   0.232→0.319); **rain 0.244→0.264**. Night (0.193→0.180) and fog (flat) fail; overall S3 is
   precision-heavy/recall-light. Reading: hand-set weather **ties S2 on 5-fold, below on
   official**; gains only where the physics is modelled. Write-up: `paper/results_notes.md`.
-- **S5 implemented + built (2026-09-20), revised from pre-registered:** parameter-level physics
-  inversion was implemented and tested but is **not identifiable** across the BDD↔ACDC base-domain
-  gap; S5 redefined as **S3 structure + target-appearance calibration** (per-channel mean/std
-  matched; saturation diagnostic). `src/synth/{calibrate,physics,build_s5,inspect_s5}.py` +
-  `results/calibration/synth_stats.json` + `data/yolo/bdd_s5/`; `s5` registered in `stage_common`.
-  Inspector PASS (labels byte-identical, 1,250/condition, condition parity with S3, closed-loop
-  mean/std diff <~2), deterministic. **Awaiting train/eval.**
+- **S5 implemented + built + evaluated (2026-09-20), revised from pre-registered:**
+  parameter-level physics inversion was implemented and tested but is **not identifiable** across
+  the BDD↔ACDC base-domain gap; S5 redefined as **S3 structure + target-appearance calibration**
+  (per-channel mean/std matched; saturation diagnostic). `src/synth/{calibrate,physics,build_s5,inspect_s5}.py`
+  + `results/calibration/synth_stats.json` + `data/yolo/bdd_s5/`; `s5` registered in `stage_common`.
+  Inspector PASS (byte-identical labels, 1,250/condition, condition parity with S3, closed-loop
+  mean/std <~2), deterministic. **Result: official mAP@50 0.2939 — best BDD-trained stage**
+  (+0.0106 over S2, +0.0198 over S3), ~49% of the headroom; 5-fold 0.2951 (±0.0132) = S2/S3 tie;
+  in-domain 0.4877. Gains in **rain 0.290 / night 0.199 / bus 0.255 / truck 0.321**; **fog regresses
+  to 0.463**; recall 0.266→0.301. Write-up: `PROJECT.md` §9, `paper/results_notes.md`.
 - **S5b blur ablation designed (2026-09-20):** ancillary one-factor over S5; condition-specific
   blur calibrated to the pool; own pre-registered ranges; S5b-only sensor-calibration exception;
   Tier 0 preview → Tier 1 design-split probe → Tier 2 train if warranted; feeds S6a/S6b.
@@ -310,11 +315,11 @@ scorer and is scored once per stage.
    non-identifiable → S5 = **S3 structure + appearance calibration**. `calibrate.py` →
    `results/calibration/synth_stats.json`; `physics.py` + `build_s5.py` → `data/yolo/bdd_s5/`;
    `inspect_s5.py` PASS (condition parity with S3, closed-loop mean/std <~2); deterministic.
-8. **S5 train + eval (next):** 80 epochs on `configs/bdd_s5.yaml`, full S2-matched eval
-   (official + 5-fold + in-domain), then `aggregate.py`/`visualize.py` and the write-up
-   (`PROJECT.md` §9/§10, `paper/results_notes.md`, `HANDOFF.md`).
-9. **S5b (after S5, before S6 design):** blur ablation over S5 (Tier 0 preview → Tier 1
-   design-split probe → Tier 2 train if warranted); feeds S6a/S6b.
+8. ~~**S5 train + eval**~~ — **done 2026-09-20** (official mAP@50 0.2939 best BDD-trained, 5-fold
+   0.2951 tie, in-domain 0.4877; rain/night/bus/truck gains, fog regression; write-up done).
+9. **S5b (next, before S6 design):** blur ablation over S5 (Tier 0 preview → Tier 1
+   design-split probe → Tier 2 train if warranted); feeds S6a/S6b. Also: investigate the S5
+   **fog regression** and whether the appearance transfer should be softened.
 10. Later: S6a/S6b, S4 FDA online (`src/aug/fda.py`), S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---

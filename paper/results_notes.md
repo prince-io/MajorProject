@@ -192,18 +192,118 @@ the coarse night model spends precision it cannot recover.
 > improve — consistent with global dimming and constant-transmission fog being too crude and
 > motivating calibration (S5).
 
+## S5 — appearance-calibrated synthesis (unlabeled DA)
+
+**Design.** S3's weather structure is kept **unchanged** (same operators, same parameter
+ranges); S5 adds **target-appearance calibration**: per-channel mean/std measured on the
+unlabeled ACDC-train pool (1,200; never val/design) are matched at generation. One-factor over
+S3 (same scenes, same condition-per-source). **Revised from pre-registered:** per-parameter
+physics inversion (direct and forward-curve/severity) was implemented and found
+**non-identifiable** across the BDD↔ACDC base-domain gap, so the calibrated quantity is
+appearance. Same 80-epoch schedule (best @66).
+
+### Main comparison (official ACDC val / 5-fold / in-domain)
+
+| Metric | S1 (anchor) | S2 (photometric) | S3 (hand-set weather) | **S5 (appearance)** | T1aug (ceiling) |
+|---|---|---|---|---|---|
+| mAP@50 (official) | 0.2690 | 0.2833 | 0.2741 | **0.2939** | 0.3196 |
+| mAP@50-95 (official) | 0.1559 | 0.1650 | 0.1573 | 0.1642 | 0.1957 |
+| Precision (official) | 0.4613 | 0.4343 | **0.5315** | 0.4614 | 0.5391 |
+| Recall (official) | 0.2655 | 0.2715 | 0.2444 | **0.3007** | 0.2889 |
+| 5-fold mAP@50 | 0.2863 ± 0.0124 | 0.2933 ± 0.0144 | 0.2947 ± 0.0119 | **0.2951 ± 0.0132** | 0.3827 ± 0.0187 |
+| 5-fold mAP@50-95 | 0.1609 ± 0.0060 | 0.1643 ± 0.0087 | 0.1665 ± 0.0080 | **0.1670 ± 0.0064** | 0.2214 ± 0.0106 |
+| In-domain BDD mAP@50 | 0.4911 | 0.4920 | 0.4799 | 0.4877 | — |
+| Headroom captured (S1→ceiling) | — | 28% | 10% | **49%** | 100% |
+
+S5 is the **best BDD-trained stage on the official split** (+0.0106 over S2, +0.0198 over S3),
+with a large **recall** gain, but on **5-fold it is a three-way tie** with S2/S3 (all ~0.295).
+
+### Per weather (official mAP@50 / mAP@50-95)
+
+| Weather | S1 | S2 | S3 | **S5** | T1aug |
+|---|---|---|---|---|---|
+| fog | 0.491 / 0.327 | 0.485 / 0.317 | 0.489 / 0.297 | **0.463 / 0.279** | 0.523 / 0.363 |
+| night | 0.193 / 0.099 | 0.179 / 0.094 | 0.180 / 0.096 | **0.199 / 0.104** | 0.225 / 0.119 |
+| rain | 0.244 / 0.131 | 0.256 / 0.139 | 0.264 / 0.155 | **0.290 / 0.163** | 0.302 / 0.180 |
+| snow | 0.284 / 0.159 | 0.282 / 0.163 | **0.300** / 0.164 | 0.299 / 0.155 | 0.318 / 0.184 |
+
+**Rain is the headline** (0.290; ~79% of the S1→ceiling rain gap closed) and **night improves
+for the first time** (0.199). Snow holds at S3's level; **fog regresses** (0.463, the worst of
+the BDD-trained stages).
+
+### Per weather — 5-fold mAP@50 (mean ± std)
+
+| Weather | S1 | S2 | S3 | **S5** |
+|---|---|---|---|---|
+| fog | 0.4757 ± 0.0949 | 0.4695 ± 0.1095 | 0.4656 ± 0.1089 | 0.4587 ± 0.1069 |
+| night | **0.1957 ± 0.0402** | 0.1898 ± 0.0375 | 0.1816 ± 0.0298 | 0.1873 ± 0.0330 |
+| rain | 0.2989 ± 0.0709 | 0.2976 ± 0.0728 | 0.3056 ± 0.0658 | **0.3137 ± 0.0681** |
+| snow | 0.2997 ± 0.0218 | 0.3098 ± 0.0208 | **0.3062 ± 0.0193** | 0.3048 ± 0.0232 |
+
+Across folds only **rain** keeps a consistent S5 advantage; fog is consistently lowest for S5;
+snow is an S2/S3/S5 tie.
+
+### Per class (official mAP@50 / mAP@50-95)
+
+| Class | S1 | S2 | S3 | **S5** | T1aug |
+|---|---|---|---|---|---|
+| person | 0.270 / 0.106 | 0.303 / 0.129 | 0.273 / 0.115 | 0.275 / 0.113 | 0.340 / 0.159 |
+| rider | 0.071 / 0.038 | 0.109 / 0.054 | **0.117** / 0.051 | 0.115 / 0.044 | 0.145 / 0.067 |
+| car | 0.701 / 0.443 | 0.703 / 0.451 | 0.693 / 0.442 | 0.704 / 0.449 | 0.704 / 0.462 |
+| truck | 0.289 / 0.205 | 0.301 / 0.224 | 0.304 / 0.213 | **0.321** / 0.224 | 0.313 / 0.225 |
+| bus | 0.169 / 0.105 | 0.206 / 0.105 | 0.167 / 0.087 | **0.255** / 0.123 | 0.283 / 0.203 |
+| bicycle | 0.113 / 0.038 | 0.078 / 0.028 | 0.091 / 0.036 | 0.093 / 0.033 | 0.132 / 0.059 |
+
+`bus` jumps to 0.255 (~75% of the bus gap closed) and `truck` to **0.321, above the fine-tuned
+ceiling (0.313)** — S5 moves exactly the classes that held most of the remaining headroom.
+
+### Precision / recall mechanism
+
+S5 lifts **recall** sharply (0.266 → 0.301) at S1-like precision (0.461), the opposite of S3's
+precision-heavy profile. Per condition, S5 gains recall on **snow (0.232 → 0.348)** and **fog
+(0.409 → 0.420)**, and raises precision on **rain (0.237 → 0.391)** and **night (0.382 → 0.433)**;
+the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall gain.
+
+### Interpretation
+
+- **First strategy to clearly top the official primary metric** among BDD-trained stages, and it
+  captures **~49%** of the anchor-to-ceiling headroom (vs S2's 28%, S3's 10%).
+- **Gains are condition- and class-specific:** rain (best), night (first improvement), and
+  bus/truck. **Fog regresses** — plausibly an artifact of the global appearance transfer, which
+  is strongest where fog already looked close to the target.
+- **The official-vs-5-fold split repeats:** clear official win, fold-level tie. Single seed.
+- **In-domain stays healthy** (0.488), so the appearance shift does not cost clear-weather
+  accuracy meaningfully.
+
+### Caveats to state
+
+- **Single seed.** The S3→S5 official gap (+0.020) exceeds the fold spread (±0.013), but the
+  5-fold tie (~0.295 across S2/S3/S5) means the official advantage is not corroborated across folds.
+- **Appearance transfer is global and unconstrained**; it produces strong colour casts and may be
+  over-aggressive (notably night/rain, and the fog regression).
+- **mAP@50-95 is only ~tied with S2** (0.164), so the strict-metric picture is weaker than mAP@50.
+
+### Paper-ready sentences
+
+> We keep the hand-set weather structure fixed and calibrate only its **global appearance** to
+> the unlabeled ACDC-train pool (per-channel mean/std). S5 is the best BDD-trained stage on the
+> official ACDC validation split (mAP@50 0.294 vs S2 0.283 and S3 0.274), capturing ~49% of the
+> anchor-to-ceiling headroom, with gains concentrated in **rain** (0.290) and **night** (0.199)
+> and in the **bus/truck** classes, and a large recall increase (0.266 → 0.301). The advantage
+> is official-specific: across the 5-fold split S2, S3 and S5 are statistically indistinguishable
+> (~0.295), and **fog regresses** (0.463), suggesting the global appearance transfer can hurt
+> conditions that were already near-target.
+
 ## What's next
 
-- **S5 — appearance-calibrated synthesis (built 2026-09-20, revised from pre-registered):** S3's
-  weather structure kept unchanged; S5 adds **target-appearance calibration** — per-channel
-  mean/std measured on the ACDC-train unlabeled pool and matched at generation (unlabeled DA;
-  saturation reported as a diagnostic). Parameter-level physics inversion was tested and found
-  non-identifiable across the BDD↔ACDC base-domain gap, hence the appearance pivot. One-factor
-  over S3; see `PROJECT.md` §5. **Awaiting train/eval.**
-- **S5b — calibrated blur ablation (planned, after S5):** ancillary one-factor over S5;
+- **S5b — calibrated blur ablation (next, after S5):** ancillary one-factor over S5;
   condition-specific blur (rain directional motion, fog/snow defocus, night none) with strength
   calibrated to the ACDC-train pool; screened by a preview + a design-split sensitivity probe,
   trained only if warranted. **S5b↔S5 is the clean comparison** (it is not folded into S5).
+- **S5 follow-ups:** investigate the **fog regression** (0.463) and whether the global appearance
+  transfer should be softened; decide on a calibration sample-size ablation.
+- **S6a/S6b** — use S5 (best BDD-trained on official) as the natural base for the fixed combination
+  and the condition-aware policy.
 - **S4 FDA** online (`src/aug/fda.py` + hook); β chosen when we reach S4. S4↔S5 (same pool) is the
   controlled equal-access comparison.
 - Decide per the reviewer: S4 β set (restore 0.01?), seeds (3 for S1/S6).
@@ -213,8 +313,9 @@ the coarse night model spends precision it cannot recover.
 
 - `results/summary/figures/comparison_overall.png`, `comparison_per_weather.png`, `class_weather_<exp>.png`.
 - `results/summary/{summary.json,per_class.csv,per_class.md}`.
-- S3 result figures: `results/summary/figures/comparison_overall.png` / `comparison_per_weather.png`
-  (S3 included), `class_weather_S3_acdc.png`, `results/experiments/S3/figures/{bars_S3_acdc_official,training_curves}.png`.
+- S3 result figures: `class_weather_S3_acdc.png`, `results/experiments/S3/figures/{bars_S3_acdc_official,training_curves}.png`.
+- S5 result figures: `class_weather_S5_acdc.png`, `results/experiments/S5/figures/{bars_S5_acdc_official,training_curves}.png`.
 - `results/summary/figures/synth_preview_bdd_s2.png` (qualitative S2 samples).
 - `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png` (qualitative S3 samples).
-- `results/summary/synth_report_bdd_s3.txt` (S3 inspector report incl. object-visibility).
+- `results/summary/figures/synth_preview_bdd_s5_{fog,rain,snow,night}.png` (qualitative S5 samples).
+- `results/summary/synth_report_bdd_s3.txt`, `results/summary/synth_report_bdd_s5.txt` (inspector reports).
