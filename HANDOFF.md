@@ -434,10 +434,15 @@ python src/aggregate.py && python src/visualize.py
 ## 12. Open questions
 
 - **S4 FDA β set** — whether to restore β=0.01; decide when S4 is built.
-- **S5 open items:** how often fitted values hit the S3-range clip (frequent clipping = estimator
-  bias / mis-set hand range, must be reported); whether a calibration sample-size ablation earns a run.
+- **S5 open items:** (a) resolved (best BDD-trained on official, tie on 5-fold); (b) investigate the
+  **fog regression** (0.463) and whether the appearance transfer should be softened; (c) calibration
+  sample-size ablation.
 - **S5b open items:** whether Tier 2 (training the blur arm) is warranted after the Tier 0/1 probe;
   how much design-split-probe tooling to build (minimal script vs config + script).
+- **Class-weighting sensitivity (macro vs micro) — future option:** mAP is a macro mean, so rare
+  classes dominate the headline; dropping `bicycle` lifts every run by ~+0.02–0.04 without changing
+  the ranking. Keep macro mAP primary; add micro/class-subset only as a labeled secondary metric.
+  See `PROJECT.md` §11.
 - Resolve or drop the "MIC"/"ViSGA" tags in `paper/literature/09`.
 - Whether S6c earns its extra run.
 - Whether to sweep the clear:synthetic ratio beyond 1:1.
