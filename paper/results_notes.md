@@ -304,7 +304,9 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
   test-time blur is ~flat for fog (peak +0.012 at the fitted strength), monotonically harmful
   for rain (−0.051 at fitted), and beneficial for snow (+0.030 at fitted, +0.040 at 1.5×) — a
   per-condition split, and a **screening heuristic only** (test-time sensitivity ≠ training-time
-  benefit). **S5b↔S5 is the clean comparison** (it is not folded into S5).
+  benefit). **Dataset built + inspected** (`data/yolo/bdd_s5b/`, 1,250/condition, labels
+  byte-identical, realized S5b/source fog 0.33 / rain 0.54 / snow 0.89 / night 1.00 ≈ targets);
+  **ready to train**. **S5b↔S5 is the clean comparison** (it is not folded into S5).
 - **S5 follow-ups:** investigate the **fog regression** (0.463) and whether the global appearance
   transfer should be softened; decide on a calibration sample-size ablation.
 - **S6a/S6b** — use S5 (best BDD-trained on official) as the natural base for the fixed combination

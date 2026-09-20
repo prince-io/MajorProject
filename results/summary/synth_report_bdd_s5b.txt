@@ -1,0 +1,58 @@
+dataset: bdd_s5b
+images on disk: 5000  index entries: 5000
+labels byte-identical: 5000/5000
+mean brightness: 102.6 (min 26.4, max 145.4)
+conditions: {'fog': 1250, 'night': 1250, 'rain': 1250, 'snow': 1250}
+effective blur (from index.json):
+  fog    {'kind': 'gaussian', 'sigma_frac': 0.001364, 'sigma_px': 0.982, 'source': 'fit'}
+  night  {'kind': 'none'}
+  rain   {'kind': 'motion', 'length_frac': 0.005548, 'length_px': 3.9943, 'source': 'fit'}
+  snow   {'kind': 'gaussian', 'sigma_frac': 0.000749, 'sigma_px': 0.5395, 'source': 'fit'}
+sharpness ratios (primary = hf_mid_ratio, median):
+  fog    S5b/S5=0.3284 S5/source=1.0075 S5b/source=0.3307
+  night  S5b/S5=0.9992 S5/source=1.0639 S5b/source=1.0607
+  rain   S5b/S5=0.4213 S5/source=1.2513 S5b/source=0.5442
+  snow   S5b/S5=0.7073 S5/source=1.2487 S5b/source=0.8917
+closed-loop appearance (observed median vs target median):
+  fog    mean_b     observed= 128.54 target= 129.86 diff=-1.32
+  fog    mean_g     observed= 128.00 target= 128.08 diff=-0.08
+  fog    mean_r     observed= 130.96 target= 131.34 diff=-0.37
+  fog    std_b      observed=  63.43 target=  65.90 diff=-2.47
+  fog    std_g      observed=  60.61 target=  61.87 diff=-1.26
+  fog    std_r      observed=  58.14 target=  60.76 diff=-2.62
+  fog    saturation observed=  58.07 target=  18.18 diff=+39.89
+  night  mean_b     observed=  34.75 target=  31.84 diff=+2.91
+  night  mean_g     observed=  47.29 target=  45.93 diff=+1.36
+  night  mean_r     observed=  60.52 target=  59.76 diff=+0.76
+  night  std_b      observed=  30.50 target=  31.19 diff=-0.69
+  night  std_g      observed=  36.16 target=  37.27 diff=-1.10
+  night  std_r      observed=  40.81 target=  41.64 diff=-0.83
+  night  saturation observed= 163.07 target= 132.80 diff=+30.27
+  rain   mean_b     observed= 105.22 target= 105.17 diff=+0.05
+  rain   mean_g     observed= 106.16 target= 106.08 diff=+0.08
+  rain   mean_r     observed= 108.99 target= 109.64 diff=-0.66
+  rain   std_b      observed=  74.56 target=  79.86 diff=-5.31
+  rain   std_g      observed=  71.77 target=  75.88 diff=-4.10
+  rain   std_r      observed=  69.96 target=  75.10 diff=-5.13
+  rain   saturation observed= 106.60 target=  30.64 diff=+75.96
+  snow   mean_b     observed= 128.50 target= 129.07 diff=-0.57
+  snow   mean_g     observed= 127.14 target= 127.11 diff=+0.02
+  snow   mean_r     observed= 128.82 target= 129.40 diff=-0.58
+  snow   std_b      observed=  60.95 target=  62.14 diff=-1.19
+  snow   std_g      observed=  58.43 target=  59.08 diff=-0.65
+  snow   std_r      observed=  57.10 target=  58.36 diff=-1.26
+  snow   saturation observed=  56.69 target=  17.70 diff=+38.99
+object visibility (GT-box local contrast, after/before):
+  fog    boxes=16902 frac<0.3=0.001 p05=0.654 median=0.879
+  night  boxes=17232 frac<0.3=0.006 p05=0.427 median=0.609
+  rain   boxes=17321 frac<0.3=0.001 p05=0.794 median=1.068
+  snow   boxes=17100 frac<0.3=0.000 p05=0.764 median=0.974
+previews:
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5b_fog.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_compare_bdd_s5b_fog.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5b_night.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_compare_bdd_s5b_night.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5b_rain.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_compare_bdd_s5b_rain.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5b_snow.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_compare_bdd_s5b_snow.png

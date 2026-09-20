@@ -170,7 +170,7 @@ training data/augmentation changes.
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | **done** (0.2741; 5-fold 0.2947) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated appearance synthesis (S3 structure + target-appearance match) | target-appearance calib. | **done** (0.2939; 5-fold 0.2951) |
-| S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | Tier 0/1 done; Tier 2 pending |
+| S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | dataset ready; training pending |
 | S6a | best fixed combination | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
 | S6c | per-condition policy (optional) | custom policy | optional |
@@ -303,7 +303,10 @@ scorer and is scored once per stage.
   **Tier 1 probe: fog ~flat (peak +0.012 at fitted), rain monotonically harmful (−0.051 at
   fitted), snow beneficial (+0.030 at fitted, peak +0.040 at 1.5×).** S5b-only
   sensor-calibration exception; **S5b↔S5** the only clean comparison; feeds S6a/S6b.
-  **Next: Tier 2 go/no-go decision (deferred to the user).**
+  **Dataset built + inspected (2026-09-20):** `data/yolo/bdd_s5b/` (5,000 blurred + 5,000 clear
+  referenced), manifest 10,000, conditions 1,250 each, `configs/bdd_s5b.yaml`; inspector PASS
+  (labels byte-identical, condition parity with S3, realized S5b/source fog 0.33 / rain 0.54 /
+  snow 0.89 / night 1.00 ≈ targets). **Ready to train (Tier 2).**
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -346,11 +349,11 @@ scorer and is scored once per stage.
    `inspect_s5.py` PASS (condition parity with S3, closed-loop mean/std <~2); deterministic.
 8. ~~**S5 train + eval**~~ — **done 2026-09-20** (official mAP@50 0.2939 best BDD-trained, 5-fold
    0.2951 tie, in-domain 0.4877; rain/night/bus/truck gains, fog regression; write-up done).
-9. **S5b (Tier 0 + Tier 1 done 2026-09-20):** decide **Tier 2** (build/train/eval the blur arm)
-   given the per-condition probe (fog flat, rain harmful, snow beneficial). If yes:
-   `build_s5b.py --jobs 8` → `inspect_s5b.py --dataset-name bdd_s5b` → train 80 epochs `--exp S5b`
-   → S2-matched eval. Feeds S6a/S6b. Also: investigate the S5 **fog regression** and whether the
-   appearance transfer should be softened.
+9. **S5b (Tier 0/1 done + dataset built 2026-09-20):** **train + eval (Tier 2)** is the next step
+   — dataset `data/yolo/bdd_s5b/` and `configs/bdd_s5b.yaml` are ready. Train 80 epochs
+   `--exp S5b`, then the full S2-matched eval (official + 5-fold + in-domain); commands in §9.
+   Feeds S6a/S6b. Also: investigate the S5 **fog regression** and whether the appearance transfer
+   should be softened.
 10. Later: S6a/S6b, S4 FDA online (`src/aug/fda.py`), S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
@@ -391,6 +394,22 @@ for k in 0 1 2 3 4; do
 done
 python src/eval.py --weights $W --data configs/bdd_src.yaml \
   --name S3_in_domain --exp S3        # in-domain (no --per-weather)
+
+# --- S5b (dataset READY 2026-09-20; Tier 2 training+eval pending) ---
+python src/synth/build_s5b.py --jobs 8                    # regenerate dataset (~2.5-4.5 min)
+python src/synth/inspect_s5b.py --dataset-name bdd_s5b    # validate + per-condition previews
+python src/train.py --data configs/bdd_s5b.yaml --model yolov8n.pt \
+  --epochs 80 --batch 32 --seed 42 --aug default --exp S5b
+W=results/experiments/S5b/train/weights/best.pt
+python src/eval.py --weights $W --data configs/acdc_official.yaml \
+  --name S5b_acdc_official --per-weather --exp S5b
+for k in 0 1 2 3 4; do
+  python src/eval.py --weights $W --data configs/acdc_cv5_fold$k.yaml \
+    --name S5b_acdc_fold$k --per-weather --exp S5b
+done
+python src/eval.py --weights $W --data configs/bdd_src.yaml \
+  --name S5b_in_domain --exp S5b        # in-domain (no --per-weather)
+python src/aggregate.py && python src/visualize.py
 
 # --- S4: online FDA (trainer hook not written yet) ---
 # python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \
