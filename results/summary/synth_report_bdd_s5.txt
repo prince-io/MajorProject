@@ -1,0 +1,44 @@
+dataset: bdd_s5
+images on disk: 5000  index entries: 5000
+labels byte-identical: 5000/5000
+mean brightness: 102.5 (min 28.1, max 144.1)
+conditions: {'fog': 1250, 'night': 1250, 'rain': 1250, 'snow': 1250}
+closed-loop appearance (observed median vs target median):
+  fog    mean_b     observed= 129.30 target= 129.86 diff=-0.56
+  fog    mean_g     observed= 128.00 target= 128.08 diff=-0.08
+  fog    mean_r     observed= 130.89 target= 131.34 diff=-0.45
+  fog    std_b      observed=  63.74 target=  65.90 diff=-2.16
+  fog    std_g      observed=  60.71 target=  61.87 diff=-1.16
+  fog    std_r      observed=  58.07 target=  60.76 diff=-2.68
+  fog    saturation observed=  58.73 target=  18.18 diff=+40.56
+  night  mean_b     observed=  33.49 target=  31.84 diff=+1.65
+  night  mean_g     observed=  46.46 target=  45.93 diff=+0.53
+  night  mean_r     observed=  60.27 target=  59.76 diff=+0.51
+  night  std_b      observed=  29.99 target=  31.19 diff=-1.21
+  night  std_g      observed=  36.22 target=  37.27 diff=-1.05
+  night  std_r      observed=  41.00 target=  41.64 diff=-0.64
+  night  saturation observed= 165.00 target= 132.80 diff=+32.20
+  rain   mean_b     observed= 105.54 target= 105.17 diff=+0.37
+  rain   mean_g     observed= 106.10 target= 106.08 diff=+0.03
+  rain   mean_r     observed= 108.13 target= 109.64 diff=-1.51
+  rain   std_b      observed=  75.25 target=  79.86 diff=-4.62
+  rain   std_g      observed=  71.90 target=  75.88 diff=-3.97
+  rain   std_r      observed=  69.75 target=  75.10 diff=-5.35
+  rain   saturation observed= 104.14 target=  30.64 diff=+73.49
+  snow   mean_b     observed= 128.75 target= 129.07 diff=-0.33
+  snow   mean_g     observed= 127.53 target= 127.11 diff=+0.42
+  snow   mean_r     observed= 128.66 target= 129.40 diff=-0.74
+  snow   std_b      observed=  61.25 target=  62.14 diff=-0.89
+  snow   std_g      observed=  58.59 target=  59.08 diff=-0.49
+  snow   std_r      observed=  57.23 target=  58.36 diff=-1.14
+  snow   saturation observed=  56.94 target=  17.70 diff=+39.24
+object visibility (GT-box local contrast, after/before):
+  fog    boxes=16902 frac<0.3=0.001 p05=0.830 median=1.005
+  night  boxes=17232 frac<0.3=0.005 p05=0.428 median=0.611
+  rain   boxes=17321 frac<0.3=0.000 p05=1.007 median=1.207
+  snow   boxes=17100 frac<0.3=0.000 p05=0.824 median=1.023
+previews:
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5_fog.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5_night.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5_rain.png
+  /home/ps/Desktop/major_project/results/summary/figures/synth_preview_bdd_s5_snow.png

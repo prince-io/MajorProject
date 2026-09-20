@@ -40,7 +40,7 @@ from common import CONFIGS_DIR, SPLITS_DIR, UNIFIED_CLASSES, ensure_dir  # noqa:
 from synth import common as C  # noqa: E402
 
 # stage -> importable module path (extend as S5/S6 are added).
-MODULE_BY_STAGE: dict[str, str] = {"s3": "synth.weather"}
+MODULE_BY_STAGE: dict[str, str] = {"s3": "synth.weather", "s5": "synth.physics"}
 
 LOG_COLUMNS = ("source", "image", "label", "stage", "condition", "ops", "seed", "attempt")
 

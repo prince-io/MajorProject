@@ -1,0 +1,11 @@
+path: /home/ps/Desktop/major_project/data/yolo/bdd_s5
+train: /home/ps/Desktop/major_project/splits/bdd_s5_train.txt
+val: /home/ps/Desktop/major_project/splits/bdd_src_val.txt
+nc: 6
+names:
+  0: person
+  1: rider
+  2: car
+  3: truck
+  4: bus
+  5: bicycle
