@@ -24,7 +24,7 @@ from common import DATA_YOLO, SPLITS_DIR  # noqa: E402  (re-exported for the pac
 
 SEED = 42
 CONDITIONS = ("fog", "night", "rain", "snow")
-STAGES = ("s2", "s3", "s5", "s6a", "s6b")
+STAGES = ("s2", "s3", "s5", "s5b", "s6a", "s6b")
 
 A_CLEAR_MANIFEST = SPLITS_DIR / "bdd_src_A_clear.txt"
 B_SOURCE_MANIFEST = SPLITS_DIR / "bdd_src_B_source.txt"

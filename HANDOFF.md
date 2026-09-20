@@ -23,7 +23,8 @@ locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0
 trained and evaluated (official 0.2741, 5-fold 0.2947 — ties S2 on 5-fold, best BDD-trained
 snow result, below S2 on the official split). S5 (appearance calibration) is trained+evaluated:
 official mAP@50 **0.2939** — best BDD-trained stage (~49% of headroom), 5-fold 0.2951 (tie with
-S2/S3), fog regresses. Next: **S5b (calibrated blur ablation)**, then S6 design.**
+S2/S3), fog regresses. Next: **S5b (calibrated blur ablation) — pre-registered + implemented
+(Tier 0 preview and Tier 1 design-split probe pending)**, then S6 design.**
 
 ---
 
@@ -76,13 +77,20 @@ S2/S3), fog regresses. Next: **S5b (calibrated blur ablation)**, then S6 design.
   `weather.apply` then matches per-channel mean/std. **One-factor over S3.** Parameter-level physics
   inversion was implemented and tested but is **not identifiable** across the BDD↔ACDC base-domain
   gap, hence the appearance pivot. See `PROJECT.md` §5/§2.
-- **S5b blur ablation (planned 2026-09-20):** ancillary one-factor ablation over S5 —
-  condition-specific blur (rain directional motion, fog/snow defocus, night none), strength
-  **calibrated to the ACDC-train pool**; blur has **its own pre-registered ranges** (no S3
-  equivalent), clipped+logged. Blur is **not** folded into S5 (would confound S5↔S3). S5b is an
-  **S5b-only sensor/sharpness-calibration exception**; **S5b↔S5 is the only clean comparison**.
-  Evidence: Tier 0 preview → Tier 1 design-split (400) sensitivity probe (never val) → Tier 2
-  training only if warranted. Feeds S6a/S6b.
+- **S5b blur ablation (pre-registered 2026-09-20):** ancillary one-factor ablation over S5 —
+  condition-specific blur (rain directional motion aligned to streak slant, fog/snow defocus,
+  night none), strength **calibrated to the ACDC-train pool**; blur has **its own pre-registered
+  ranges** (no S3 equivalent), clipped+logged. **Order:** `weather.apply → blur →
+  appearance_match` (blur **before** the match, so S5b differs from S5 by blur alone; blurring
+  after would lower per-channel std and make it two factors). Estimator in new
+  `src/synth/blur_calibrate.py` (**S5's `calibrate.py` untouched**): forward-curve fit at a common
+  normalized short side (Laplacian variance + HF-energy ratio) with a **Tier 0 identifiability
+  gate** (monotonic / target-in-range / bound clipping recorded) and a preview-chosen fallback inside the
+  ranges. Blur is **not** folded into S5 (would confound S5↔S3). S5b is an **S5b-only
+  sensor/sharpness-calibration exception**; **S5b↔S5 is the only clean comparison**. Evidence:
+  Tier 0 preview → Tier 1 design-split (400) probe `src/analysis/blur_probe.py` → tracked
+  `results/summary/blur_probe/` (never val, never a stage row) → Tier 2 training only if
+  warranted. Feeds S6a/S6b.
 - **S4 β:** **{0.05, 0.10}** (provisional — decide when S4 is built; review suggests restoring 0.01).
 - **Experiment grouping:** `--exp <ID>` → `results/experiments/<ID>/{train,eval,figures}`;
   `aggregate.py`/`visualize.py` scan the experiment tree.
@@ -211,16 +219,21 @@ identifiable** across the BDD↔ACDC base-domain gap. Comparisons: S5↔S3 (appe
 one factor), S5↔S2 (target-calibrated vs generic photometric), S5↔S4 (physics vs Fourier
 appearance). Excluded from S5: row-depth fog, local night, blur (tested as S5b).
 
-**S5b (blur ablation, planned 2026-09-20).** Ancillary one-factor ablation over S5:
+**S5b (blur ablation, pre-registered 2026-09-20).** Ancillary one-factor ablation over S5:
 condition-specific blur (rain directional motion aligned to streak slant; fog/snow isotropic
 defocus; night none), **calibrated to the ACDC-train pool** by sharpness attenuation (new
-estimator; own pre-registered ranges, clipped+logged). Append-only (`src/synth/blur.py` +
-`build_s5b.py`) composing S5's pipeline (`weather.apply` → appearance match) → blur; S5 untouched.
-Note: the blur-strength method is to be confirmed at Tier 0 — S5 showed parameter-level matching
-across the BDD↔ACDC gap can saturate. Evidence:
-Tier 0 preview + visibility; **Tier 1 evaluate the trained S5 model on the 400 design split**
-with test-time blur (`results/analysis/blur_probe/`; never val, never a stage row); Tier 2
-train only if warranted. `S5b↔S5` is the only clean comparison. Feeds S6a/S6b.
+estimator in `blur_calibrate.py`; own pre-registered ranges, clipped+logged). **Order:
+`weather.apply → blur → appearance_match`** (blur **before** the appearance match, so S5b
+differs from S5 by blur alone — blurring after the match would lower per-channel std and make it
+a two-factor change). Append-only (`src/synth/blur.py` + `blur_calibrate.py` + `build_s5b.py` +
+`inspect_s5b.py`) composing S5's pipeline; S5 untouched. Estimator = forward curve at a common
+normalized short side (variance-normalized Laplacian primary + HF-energy ratio) with a **Tier 0
+identifiability gate** (monotonic / target-in-range / bound clipping recorded) and a preview-chosen fallback inside the
+ranges — required because S5 showed parameter-level matching across the BDD↔ACDC gap can
+saturate. Evidence: Tier 0 preview + visibility + closed-loop sharpness; **Tier 1 evaluate the
+trained S5 model on the 400 design split** with test-time blur via `src/analysis/blur_probe.py`,
+written to tracked `results/summary/blur_probe/` (never val, never a stage row); Tier 2 train only
+if warranted. `S5b↔S5` is the only clean comparison. Feeds S6a/S6b.
 
 **S4 (FDA).** Reference `low_freq_mutate` [Yang & Soatto, CVPR 2020], online; target pool =
 `splits/acdc_pool_unlabeled.txt`; β ∈ **{0.05, 0.10}**; headline = best β.
@@ -273,10 +286,12 @@ scorer and is scored once per stage.
   (+0.0106 over S2, +0.0198 over S3), ~49% of the headroom; 5-fold 0.2951 (±0.0132) = S2/S3 tie;
   in-domain 0.4877. Gains in **rain 0.290 / night 0.199 / bus 0.255 / truck 0.321**; **fog regresses
   to 0.463**; recall 0.266→0.301. Write-up: `PROJECT.md` §9, `paper/results_notes.md`.
-- **S5b blur ablation designed (2026-09-20):** ancillary one-factor over S5; condition-specific
-  blur calibrated to the pool; own pre-registered ranges; S5b-only sensor-calibration exception;
-  Tier 0 preview → Tier 1 design-split probe → Tier 2 train if warranted; feeds S6a/S6b.
-  Scheduled **after S5**, before S6 design.
+- **S5b blur ablation pre-registered + implemented (2026-09-20):** ancillary one-factor over S5;
+  condition-specific blur calibrated to the pool (forward-curve estimator, Tier 0 gate +
+  preview fallback); order `weather.apply → blur → appearance_match`; `blur.py` +
+  `blur_calibrate.py` + `build_s5b.py` + `inspect_s5b.py`; Tier 1 probe `src/analysis/blur_probe.py`.
+  S5b-only sensor-calibration exception; **S5b↔S5** the only clean comparison; feeds S6a/S6b.
+  Tier 0 preview → Tier 1 design-split probe → Tier 2 train if warranted (next session step).
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -319,9 +334,10 @@ scorer and is scored once per stage.
    `inspect_s5.py` PASS (condition parity with S3, closed-loop mean/std <~2); deterministic.
 8. ~~**S5 train + eval**~~ — **done 2026-09-20** (official mAP@50 0.2939 best BDD-trained, 5-fold
    0.2951 tie, in-domain 0.4877; rain/night/bus/truck gains, fog regression; write-up done).
-9. **S5b (next, before S6 design):** blur ablation over S5 (Tier 0 preview → Tier 1
-   design-split probe → Tier 2 train if warranted); feeds S6a/S6b. Also: investigate the S5
-   **fog regression** and whether the appearance transfer should be softened.
+9. **S5b (next, before S6 design):** pre-registered + implemented; run **Tier 0**
+   (`python src/synth/blur_calibrate.py` + inspect/visibility gate) → **Tier 1**
+   (`python src/analysis/blur_probe.py`) → decide Tier 2 train. Feeds S6a/S6b. Also: investigate
+   the S5 **fog regression** and whether the appearance transfer should be softened.
 10. Later: S6a/S6b, S4 FDA online (`src/aug/fda.py`), S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
@@ -439,10 +455,11 @@ python src/aggregate.py && python src/visualize.py
 - **S5 open items:** (a) resolved (best BDD-trained on official, tie on 5-fold); (b) investigate the
   **fog regression** (0.463) and whether the appearance transfer should be softened; (c) calibration
   sample-size ablation.
-- **S5b open items:** confirm the **blur-strength method at Tier 0** (pool-calibrated sharpness vs
-  preview-chosen) given the S5 saturation lesson; whether Tier 2 (training the blur arm) is warranted
-  after the Tier 0/1 probe; minimal probe tooling; probe output tracked (`results/summary/blur_probe/`)
-  vs gitignored `results/analysis/`.
+- **S5b open items:** whether **Tier 2** (training the blur arm) is warranted after the Tier 0/1
+  probe. Resolved 2026-09-20 (pre-registered): pool-calibrated forward-curve fit with a Tier 0
+  gate + preview fallback; probe tooling `src/analysis/blur_probe.py`; output tracked
+  `results/summary/blur_probe/`. Remaining Tier 0 check: confirm fitted strengths are not
+  saturated/clipped before trusting them.
 - **Class-weighting sensitivity (macro vs micro) — future option:** mAP is a macro mean, so rare
   classes dominate the headline; dropping `bicycle` lifts every run by ~+0.02–0.04 without changing
   the ranking. Keep macro mAP primary; add micro/class-subset only as a labeled secondary metric.

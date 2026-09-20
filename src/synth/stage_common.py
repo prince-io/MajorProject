@@ -39,8 +39,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from common import CONFIGS_DIR, SPLITS_DIR, UNIFIED_CLASSES, ensure_dir  # noqa: E402
 from synth import common as C  # noqa: E402
 
-# stage -> importable module path (extend as S5/S6 are added).
-MODULE_BY_STAGE: dict[str, str] = {"s3": "synth.weather", "s5": "synth.physics"}
+# stage -> importable module path (extend as stages are added).
+MODULE_BY_STAGE: dict[str, str] = {"s3": "synth.weather", "s5": "synth.physics", "s5b": "synth.blur"}
 
 LOG_COLUMNS = ("source", "image", "label", "stage", "condition", "ops", "seed", "attempt")
 

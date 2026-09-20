@@ -296,9 +296,11 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
 
 ## What's next
 
-- **S5b — calibrated blur ablation (next, after S5):** ancillary one-factor over S5;
-  condition-specific blur (rain directional motion, fog/snow defocus, night none) with strength
-  calibrated to the ACDC-train pool; screened by a preview + a design-split sensitivity probe,
+- **S5b — calibrated blur ablation (pre-registered + implemented 2026-09-20; next to run):**
+  ancillary one-factor over S5; `weather.apply → blur → appearance_match`; condition-specific
+  blur (rain directional motion, fog/snow defocus, night none) with strength fitted to the
+  ACDC-train pool by a forward-curve sharpness estimator (Tier 0 gate + preview fallback);
+  screened by a preview + a design-split sensitivity probe (`src/analysis/blur_probe.py`),
   trained only if warranted. **S5b↔S5 is the clean comparison** (it is not folded into S5).
 - **S5 follow-ups:** investigate the **fog regression** (0.463) and whether the global appearance
   transfer should be softened; decide on a calibration sample-size ablation.
