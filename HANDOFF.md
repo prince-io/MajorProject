@@ -1,7 +1,7 @@
 # HANDOFF — Session Resumption Point
 
 > Purpose: a single, self-contained entry point for resuming work in a fresh session.
-> Last updated: **2026-09-19**. Keep this current at each session close.
+> Last updated: **2026-09-20**. Keep this current at each session close.
 > `PROJECT.md` remains the single source of truth for facts, decisions, and results;
 > this file is the operational summary and "where we are right now" pointer.
 > DOX contracts (`AGENTS.md` files) remain the binding work rules — read the relevant
@@ -19,9 +19,9 @@ adverse-weather BDD, train one detector per strategy, and score all of them per 
 real ACDC, with **S1 (Ultralytics defaults) as the anchor**. The previous method directions
 (SM-WCFA, global Fourier Domain Adaptation [Yang & Soatto, CVPR 2020], Direction A / WSM,
 spectral analysis) were removed in the 2026-09-17 baseline-only reset. **S0/S1/T1/T1aug are
-locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690);
-S3's weather-synthesis dataset is built and validated (5k A clear + 5k B weather,
-1,250/condition), with training/eval pending.**
+locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 is
+trained and evaluated (official 0.2741, 5-fold 0.2947 — ties S2 on 5-fold, best BDD-trained
+snow result, below S2 on the official split). Next stage: S5 (calibrated physics).**
 
 ---
 
@@ -111,6 +111,8 @@ and skips this step.
 | T1 | ACDC labels, no aug | 0.216 | 0.254 ± 0.020 | — |
 | **T1aug** | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
 | **S1** | BDD + standard aug — **anchor** | **0.269** | 0.286 ± 0.014 | 0.491 |
+| S2 | BDD + photometric (offline) | 0.283 | 0.293 ± 0.016 | 0.492 |
+| S3 | BDD + simple weather (offline) | 0.274 | 0.295 ± 0.012 | 0.480 |
 
 ### Key findings (all in `PROJECT.md` §9)
 - **Augmentation, not target labels, is the lever.** T1 (labels, no aug) 0.254 ≈ S0 0.213;
@@ -137,7 +139,7 @@ training data/augmentation changes.
 | S0 | clear BDD, no aug | floor | done |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | done |
 | S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **done** (0.2833) |
-| S3 | S1 + simple weather transforms (offline) | fast weather sim | **built** (awaiting train) |
+| S3 | S1 + simple weather transforms (offline) | fast weather sim | **done** (0.2741; 5-fold 0.2947) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated physics synthesis (offline) | principled weather sim | planned |
 | S6a | best fixed combination | combination | planned |
@@ -211,8 +213,14 @@ scorer and is scored once per stage.
   S3+), `weather.py` (fog/rain/snow/night), `build_s3.py`, `inspect_s3.py`; all hand-set,
   geometry-preserving, no ACDC, no blur. Dataset `data/yolo/bdd_s3/` (5k weather + 5k clear
   A referenced), balanced 1,250/condition; inspector PASS; determinism verified. **S2 code is
-  frozen (append-only per experiment).** **Next: train + eval S3.** The S4 FDA hook
-  (`src/aug/fda.py`) is still planned.
+  frozen (append-only per experiment).** The S4 FDA hook (`src/aug/fda.py`) is still planned.
+- **S3 trained + evaluated (2026-09-20):** 80 epochs (best @65, no early stop), full S2-matched
+  eval. **Official mAP@50 0.2741** (+0.0051 over S1) but **below S2 0.2833**; **5-fold
+  0.2947 ± 0.0119 ≈ S2 0.2933 ± 0.0144**; in-domain 0.4799 (−0.011). **Snow is the headline:**
+  best BDD-trained stage, 0.284→**0.300** official (~49% of the S1→ceiling snow gap; snow recall
+  0.232→0.319); **rain 0.244→0.264**. Night (0.193→0.180) and fog (flat) fail; overall S3 is
+  precision-heavy/recall-light. Reading: hand-set weather **ties S2 on 5-fold, below on
+  official**; gains only where the physics is modelled. Write-up: `paper/results_notes.md`.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -245,10 +253,13 @@ scorer and is scored once per stage.
 5. ~~**Build S3**~~ — **done 2026-09-19** (`src/synth/{stage_common,weather,build_s3,inspect_s3}.py`
    + `data/yolo/bdd_s3/`; inspector PASS, determinism verified; params pre-registered in
    `PROJECT.md` §5). Re-run: `python src/synth/build_s3.py --jobs 8`.
-6. **S3 train + eval (next):** train 80 epochs on `configs/bdd_s3.yaml`, eval on ACDC
-   official per-weather, record vs S1/S2 (commands in §9). Then S5 → S6a/S6b; **S4 FDA**
+6. ~~**Train + eval S3**~~ — **done 2026-09-20** (official mAP@50 0.2741, 5-fold 0.2947,
+   in-domain 0.4799; best BDD-trained snow result; findings in `PROJECT.md` §9 and
+   `paper/results_notes.md`).
+7. **S5 (next):** calibrated physics synthesis — fit the same model families to measured
+   ACDC-train statistics (decide the calibration rule first, item 2). Then S6a/S6b; **S4 FDA**
    online (`src/aug/fda.py` + hook) — β chosen when we reach S4.
-7. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
+8. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
 
@@ -274,15 +285,20 @@ python src/train.py --data configs/bdd_s2.yaml --model yolov8n.pt \
 python src/eval.py --weights results/experiments/S2/train/weights/best.pt \
   --data configs/acdc_official.yaml --name S2_acdc_official --per-weather --exp S2
 
-# --- S3 (dataset built 2026-09-19; training/eval pending) ---
+# --- S3 (DONE 2026-09-20: official 0.2741, 5-fold 0.2947) ---
 python src/synth/build_s3.py --jobs 8                     # regenerate dataset (~2.5 min)
 python src/synth/inspect_s3.py --dataset-name bdd_s3      # validate + per-condition previews
 python src/train.py --data configs/bdd_s3.yaml --model yolov8n.pt \
   --epochs 80 --batch 32 --seed 42 --aug default --exp S3
-python src/eval.py --weights results/experiments/S3/train/weights/best.pt \
-  --data configs/acdc_official.yaml --name S3_acdc_official --per-weather --exp S3
-python src/eval.py --weights results/experiments/S3/train/weights/best.pt \
-  --data configs/bdd_src.yaml --name S3_bdd_val --exp S3   # in-domain (no --per-weather)
+W=results/experiments/S3/train/weights/best.pt
+python src/eval.py --weights $W --data configs/acdc_official.yaml \
+  --name S3_acdc_official --per-weather --exp S3
+for k in 0 1 2 3 4; do
+  python src/eval.py --weights $W --data configs/acdc_cv5_fold$k.yaml \
+    --name S3_acdc_fold$k --per-weather --exp S3
+done
+python src/eval.py --weights $W --data configs/bdd_src.yaml \
+  --name S3_in_domain --exp S3        # in-domain (no --per-weather)
 
 # --- S4: online FDA (trainer hook not written yet) ---
 # python src/train.py --data configs/bdd_src.yaml --model yolov8n.pt \

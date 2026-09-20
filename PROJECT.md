@@ -10,8 +10,8 @@
 > gates** and marked "revised from pre-registered". No stale number, path, or claim is
 > left in place.
 
-- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. **S0/S1/T1/T1aug are locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 dataset is built and validated (5k A clear + 5k B weather, 1,250/condition; awaiting training).**
-- **Last updated:** 2026-09-19 (S3 weather-synthesis dataset built and inspected; S3 parameters pre-registered)
+- **Status:** Baseline ladder **S0 / T1 / T1aug / S1 complete and locked** (official split, 1 seed; relabeled from B0/B1/B1aug/B2 on 2026-09-17). The project follows the agreed **S0–S6 comparative-study** design (§5): all stages train on clear BDD and are evaluated on real ACDC, with **S1 (Ultralytics defaults) as the anchor**. **S0/S1/T1/T1aug locked; S2 0.2833, S3 0.2741 (official mAP@50). S3 ties S2 on 5-fold (0.2947 vs 0.2933) and is the best BDD-trained stage on snow; night/fog expose the limits of hand-set parameters. S5 (calibrated physics) is next.**
+- **Last updated:** 2026-09-20 (S3 trained + full S2-matched eval; S3 results recorded)
 - **Owner:** student
 - **Hardware:** RTX 3050 Laptop, 6 GB VRAM; Python 3.12 `.venv`; PyTorch 2.6.0+cu124; Ultralytics.
 - **Raw data:** `datasets/` (read-only).
@@ -90,7 +90,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 | S0 | clear BDD, no aug | floor | **done** |
 | S1 | clear BDD + Ultralytics defaults | **anchor** | **done** |
 | S2 | S1 + generic photometric degradation (offline dataset; blur deferred) | non-weather sensor degradation | **done** (mAP@50 0.2833) |
-| S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | **built** (awaiting train) |
+| S3 | S1 + simple weather-specific transforms (offline dataset) | fast weather simulation | **done** (mAP@50 0.2741) |
 | S4 | S1 + Fourier Domain Adaptation (online), ACDC-train style (unlabeled) | appearance adaptation | planned (prior global-FDA run failed) |
 | S5 | S1 + physics-structured, ACDC-calibrated synthesis (offline dataset) | principled weather simulation | planned |
 | S6a | best fixed combination of S2–S5 | combination | planned |
@@ -118,7 +118,7 @@ The baseline ladder (§9) quantifies the domain gap and localizes where a method
 
 Outputs: `data/yolo/bdd_s3/` (5,000 weather images; the 5,000 clear A images referenced from `bdd_src`), `splits/bdd_s3_train.txt` (10k), `splits/bdd_s3_conditions.csv`, `configs/bdd_s3.yaml` (val = `bdd_src_val.txt`). Logging: `index.json` + `synthesis_log.csv` record condition and every parameter. S3 is **zero-shot DG** (no ACDC).
 
-**S3 status (2026-09-19).** Implemented per-experiment (S2 frozen) in `src/synth/{stage_common,weather,build_s3,inspect_s3}.py`. Full generation ~2.5 min (8 workers); inspector PASS: 5,000/5,000 labels byte-identical, conditions exactly 1,250 each, each synthetic differs from its source, 5 low-signal sources exempt (documented). Object-visibility (GT-box local-contrast retention, median): fog 0.52, rain 0.90, snow 1.04, night 0.40; night is the most destructive (11.7% of boxes below 0.3), as expected for the hardest condition. Determinism verified (identical image hashes on rebuild). Paper-facing preview grids at `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png`. **Training/eval pending.**
+**S3 status (2026-09-19).** Implemented per-experiment (S2 frozen) in `src/synth/{stage_common,weather,build_s3,inspect_s3}.py`. Full generation ~2.5 min (8 workers); inspector PASS: 5,000/5,000 labels byte-identical, conditions exactly 1,250 each, each synthetic differs from its source, 5 low-signal sources exempt (documented). Object-visibility (GT-box local-contrast retention, median): fog 0.52, rain 0.90, snow 1.04, night 0.40; night is the most destructive (11.7% of boxes below 0.3), as expected for the hardest condition. Determinism verified (identical image hashes on rebuild). Paper-facing preview grids at `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png`. **Trained + evaluated 2026-09-20** (80 epochs, best @65; full S2-matched eval): official mAP@50 **0.2741**, 5-fold **0.2947 ± 0.0119**, in-domain 0.4799; see the S3 result in §9.
 
 **S3 vs S5 (must not collapse into each other).** S3 uses hand-set parameters. S5 fits the same physical model families (Koschmieder fog / dark-channel transmission, rain streaks, snow particles, night illumination) to **measured ACDC-train statistics** (per-condition colour mean/std, RMS contrast, dark-channel haze, gradient/noise energy; unlabeled) — this calibration is the principled separation and the basis of S5's potential novelty. S3 parameters above are **pre-registered before any ACDC evaluation** and must not be tuned from ACDC results.
 
@@ -196,7 +196,7 @@ Study rows (official ACDC val; fill as runs complete):
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
 | S2 | BDD + photometric synthesis (offline) | **0.283** | **0.165** | 0.434 | 0.272 | 42 | **done** |
-| S3 | BDD + simple weather synthesis (offline) | | | | | 42 | **built** (awaiting train) |
+| S3 | BDD + simple weather synthesis (offline) | **0.274** | 0.157 | 0.532 | 0.244 | 42 | **done** |
 | S4 | BDD + FDA (online, best β) → ACDC | | | | | 42 | planned |
 | S5 | BDD + calibrated physics synthesis (offline) | | | | | 42 | planned |
 | S6a | best fixed combination | | | | | 42 | planned |
@@ -204,6 +204,8 @@ Study rows (official ACDC val; fill as runs complete):
 | S6c | per-condition policy (optional) | | | | | 42 | optional |
 
 **S2 result — photometric degradation (zero-shot), 2026-09-17.** S1 is the exact control (S2 = A clear + B degraded; S1 = A + B clear). Official val: mAP@50 0.2690 → **0.2833** (+0.0143), mAP@50-95 0.1559 → **0.1650** (+0.0091), P 0.461 → 0.434, R 0.266 → 0.272. 5-fold 0.2863 ± 0.0138 → 0.2933 ± 0.0161 (+0.0070, within spread). In-domain BDD 0.4911 → 0.4920 (no forgetting). S2 captures ~28% of the S1→T1aug headroom. **Per weather (official mAP@50):** fog 0.491→0.485, night 0.193→0.179, **rain 0.244→0.256**, snow 0.284→0.282. **Per class:** person 0.270→0.303, rider 0.071→0.109, bus 0.169→0.206, truck 0.289→0.301, car flat, bicycle 0.113→0.078. **Reading:** first stage above the anchor, driven by rain + rare classes; fog/night/snow flat → generic photometrics do not model structured weather (motivates S3/S5). **Caveat:** single seed; the 5-fold gain is within noise, so directionally consistent but not yet significant. Full paper-facing write-up in `paper/results_notes.md`.
+
+**S3 result — simple weather synthesis (zero-shot), 2026-09-20.** S1 is the exact control (S3 = A clear + B weather; S1 = A + B clear); schedule identical to S1/S2 (80 epochs, best @65, no early stop). Official val: mAP@50 0.2690 → **0.2741** (+0.0051), mAP@50-95 0.1559 → 0.1573 (+0.0014), P 0.461 → **0.532**, R 0.266 → 0.244. 5-fold 0.2863 ± 0.0124 → **0.2947 ± 0.0119** (+0.0084; mAP@50-95 0.1609 → 0.1665 ± 0.0080). In-domain BDD 0.4911 → 0.4799 (−0.0112, mild forgetting). S3 captures ~10% of the S1→T1aug headroom, **below S2 (0.2833) on the official split but statistically tied with S2 on 5-fold (S2 0.2933 ± 0.0144)**. **Per weather (official mAP@50):** fog 0.491→0.489, night 0.193→0.180, **rain 0.244→0.264**, **snow 0.284→0.300**. **Per weather 5-fold mAP@50:** fog 0.476→0.466, night 0.196→0.182, **rain 0.299→0.306**, **snow 0.300→0.306**. **Per class (official):** rider 0.071→**0.117** (best of S1/S2), truck 0.289→0.304, car 0.701→0.693, person 0.270→0.273, bus 0.169→0.167, bicycle 0.113→0.091. **Reading:** hand-set weather structure clears the anchor and ties S2 on 5-fold, but does **not** beat generic photometrics on the official primary metric. The gains are **condition-specific and physical**: **snow is the headline — S3 gives the best BDD-trained snow result (0.300 official, 0.306 5-fold) and closes ~49% of the S1→ceiling snow gap (mAP@50-95 snow 0.159→0.164), with snow recall rising 0.232→0.319 at higher precision**; rain improves too (+0.019 official, +0.008 5-fold). Night (global dimming, no local sources) and fog (constant transmission) regress, and person/bus drop — the overall recall loss (0.266→0.244) lives there, not in rain/snow. **Caveat:** single seed; the S2↔S3 official gap (~0.010) is inside the fold spread (±0.012–0.014), so this is "no advantage over S2", not "harm". Full paper-facing write-up in `paper/results_notes.md`. **Motivates S5 (calibration to measured ACDC-train statistics).**
 
 | ID | Config | mAP@50 | mAP@50-95 | P | R | Seed | Status |
 |---|---|---|---|---|---|---|---|
@@ -291,6 +293,7 @@ Night remains the hardest condition; the method should target night/snow and tru
 | 2026-09-19 | **S3 dataset implemented + built:** `stage_common.py`, `weather.py`, `build_s3.py`, `inspect_s3.py`; S2 code frozen | Append-only per-experiment code: each locked stage's generator is preserved and later stages add their own modules. Balanced 1,250/condition; inspector PASS; determinism verified |
 | 2026-09-19 | **Blur boundary corrected:** blur is excluded from both S2 and S3 (was documented "deferred to S3/S5"); it belongs to S5 | `PLAN.md` wrongly assumed S2 included blur; S2 had deferred it. Keeping blur out of S3 preserves the S2-vs-S3 and S3-vs-S5 attributions |
 | 2026-09-19 | **Per-experiment eval set locked:** every stage reports official (primary) + 5-fold (supplementary) + in-domain BDD, single seed 42, matching S2 | Keeps `aggregate.py`/`visualize.py` tables comparable across stages and gives each stage both the citable official number and the fold-spread/forgetting context |
+| 2026-09-20 | **S3 result:** official mAP@50 **0.2741 vs S1 0.2690** (+0.0051) but **below S2 0.2833**; 5-fold **0.2947 ± 0.0119 ≈ S2 0.2933 ± 0.0144**; in-domain 0.4799 (−0.011). Per weather: **snow 0.284→0.300** (~49% of the S1→ceiling snow gap; snow recall 0.232→0.319) and **rain 0.244→0.264**; night 0.193→0.180 and fog flat | Hand-set weather **ties generic photometrics on 5-fold but not on the official split**; only the physically structured conditions (rain/snow) improve, while night (no local illumination) and fog (constant transmission) fail. Single seed: S2↔S3 gap inside fold spread. Directly motivates **S5 calibration** |
 
 ## 11. Open questions
 
