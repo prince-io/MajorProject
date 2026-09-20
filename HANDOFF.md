@@ -215,7 +215,9 @@ appearance). Excluded from S5: row-depth fog, local night, blur (tested as S5b).
 condition-specific blur (rain directional motion aligned to streak slant; fog/snow isotropic
 defocus; night none), **calibrated to the ACDC-train pool** by sharpness attenuation (new
 estimator; own pre-registered ranges, clipped+logged). Append-only (`src/synth/blur.py` +
-`build_s5b.py`) composing S5's sampler → `weather.apply` → blur; S5 untouched. Evidence:
+`build_s5b.py`) composing S5's pipeline (`weather.apply` → appearance match) → blur; S5 untouched.
+Note: the blur-strength method is to be confirmed at Tier 0 — S5 showed parameter-level matching
+across the BDD↔ACDC gap can saturate. Evidence:
 Tier 0 preview + visibility; **Tier 1 evaluate the trained S5 model on the 400 design split**
 with test-time blur (`results/analysis/blur_probe/`; never val, never a stage row); Tier 2
 train only if warranted. `S5b↔S5` is the only clean comparison. Feeds S6a/S6b.
@@ -437,8 +439,10 @@ python src/aggregate.py && python src/visualize.py
 - **S5 open items:** (a) resolved (best BDD-trained on official, tie on 5-fold); (b) investigate the
   **fog regression** (0.463) and whether the appearance transfer should be softened; (c) calibration
   sample-size ablation.
-- **S5b open items:** whether Tier 2 (training the blur arm) is warranted after the Tier 0/1 probe;
-  how much design-split-probe tooling to build (minimal script vs config + script).
+- **S5b open items:** confirm the **blur-strength method at Tier 0** (pool-calibrated sharpness vs
+  preview-chosen) given the S5 saturation lesson; whether Tier 2 (training the blur arm) is warranted
+  after the Tier 0/1 probe; minimal probe tooling; probe output tracked (`results/summary/blur_probe/`)
+  vs gitignored `results/analysis/`.
 - **Class-weighting sensitivity (macro vs micro) — future option:** mAP is a macro mean, so rare
   classes dominate the headline; dropping `bicycle` lifts every run by ~+0.02–0.04 without changing
   the ranking. Keep macro mAP primary; add micro/class-subset only as a labeled secondary metric.
