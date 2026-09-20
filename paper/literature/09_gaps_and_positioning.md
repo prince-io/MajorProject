@@ -38,14 +38,17 @@
   gains are small but the per-condition explanation is crisp.
 - **Fallback:** B.Tech thesis only, no paper, if gains are inconclusive.
 
-## S5 calibration protocol (resolved 2026-09-20)
+## S5 calibration protocol (resolved 2026-09-20; revised)
 - **S5 calibrates on the ACDC-train unlabeled pool only** (`splits/acdc_pool_unlabeled.txt`,
   1,200 = 300/condition), **statistics only, no labels**; never official val, never the design
   split. S5 is therefore **unlabeled domain adaptation**, not zero-shot. Pre-registered in
   `PROJECT.md` §2/§5/§10.
-- Consequence to state: S5↔S3 varies calibration **and** target access; **S5↔S4** (same pool,
-  physics-structured synthesis vs Fourier appearance adaptation) is the controlled
-  equal-access comparison.
+- **Revised from pre-registered:** per-parameter physics inversion proved **non-identifiable**
+  across the BDD↔ACDC base-domain gap, so the implemented S5 calibrates **global appearance**
+  (per-channel mean/std) and keeps S3's structure. Calibrated quantity = appearance.
+- Consequence to state: S5↔S3 varies target-appearance calibration (which uses target access);
+  **S5↔S4** (same pool, appearance calibration vs Fourier appearance adaptation) is the
+  equal-access comparison of adaptation mechanisms.
 
 ## Unverified tags carried from earlier notes
 - **"MIC (CVPR 2023)"** — no matching title found via the arXiv API. Likely refers to the

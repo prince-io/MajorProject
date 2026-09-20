@@ -21,8 +21,8 @@ real ACDC, with **S1 (Ultralytics defaults) as the anchor**. The previous method
 spectral analysis) were removed in the 2026-09-17 baseline-only reset. **S0/S1/T1/T1aug are
 locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0.2690); S3 is
 trained and evaluated (official 0.2741, 5-fold 0.2947 — ties S2 on 5-fold, best BDD-trained
-snow result, below S2 on the official split). Next: **S5 (calibrated physics)** — designed and
-pre-registered, not yet implemented — then **S5b (calibrated blur ablation)** before S6 design.**
+snow result, below S2 on the official split). Next: **S5 (appearance-calibrated synthesis)** — dataset
+built, awaiting train/eval — then **S5b (calibrated blur ablation)** before S6 design.**
 
 ---
 
@@ -67,13 +67,14 @@ pre-registered, not yet implemented — then **S5b (calibrated blur ablation)** 
 - **Synthetic data budget:** fixed **10k = 5k clear + 5k synthetic**, seed 42.
 - **Synthesis implementation:** **offline** pre-generated datasets; S4 FDA stays online.
 - **Leakage control:** 400-image ACDC **design split**; official val scored once.
-- **S5 (designed 2026-09-20):** calibrated physics, **parameter-only** (same operators as S3).
+- **S5 (revised from pre-registered 2026-09-20):** **S3 structure + target-appearance calibration**.
   **Calibration source = ACDC-train unlabeled pool statistics only** (`splits/acdc_pool_unlabeled.txt`,
   1,200 = 300/condition; never val, never design) → setting is **unlabeled DA**, not zero-shot.
-  Render via S3's `weather.apply`; empirical/bounded sampling from a versioned
-  `results/analysis/synth_stats.json`; fitted values **clipped to S3 ranges and logged**; vignette
-  fit→clip `[0.10,0.30]`+report; add a **calibration self-test**; closed-loop is **QA, not a gate**.
-  Structural changes (row-depth fog, local night, blur) → S6c. See `PROJECT.md` §5/§2.
+  S3 operators/ranges kept unchanged; `calibrate.py` measures per-channel mean/std (+ saturation
+  diagnostic) → versioned `results/calibration/synth_stats.json`; `physics.py` renders via
+  `weather.apply` then matches per-channel mean/std. **One-factor over S3.** Parameter-level physics
+  inversion was implemented and tested but is **not identifiable** across the BDD↔ACDC base-domain
+  gap, hence the appearance pivot. See `PROJECT.md` §5/§2.
 - **S5b blur ablation (planned 2026-09-20):** ancillary one-factor ablation over S5 —
   condition-specific blur (rain directional motion, fog/snow defocus, night none), strength
   **calibrated to the ACDC-train pool**; blur has **its own pre-registered ranges** (no S3
@@ -155,7 +156,7 @@ training data/augmentation changes.
 | S2 | S1 + generic photometric degradation (offline; blur deferred) | sensor degradation | **done** (0.2833) |
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | **done** (0.2741; 5-fold 0.2947) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
-| S5 | S1 + calibrated physics synthesis (offline) | principled weather sim | **designed** (awaiting build) |
+| S5 | S1 + calibrated appearance synthesis (S3 structure + target-appearance match) | target-appearance calib. | **implemented** (awaiting train) |
 | S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | planned |
 | S6a | best fixed combination | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
@@ -191,20 +192,22 @@ into a "dim daytime" artifact). Params pre-registered in `PROJECT.md` §5. Built
 `splits/bdd_s3_{train.txt,conditions.csv}`, `configs/bdd_s3.yaml`. Inspector PASS,
 deterministic; per-condition previews `results/summary/figures/synth_preview_bdd_s3_*.png`.
 
-**S3 vs S5.** S3 = hand-set parameters; S5 = same physical models (parameter-only) with
-parameters fitted to **measured ACDC-train pool statistics**. This parameter-source difference
-is the separation and the basis of S5's novelty.
+**S3 vs S5.** S3 = hand-set parameters, zero-shot. S5 keeps S3's **structure** unchanged and adds
+**target-appearance calibration** (unlabeled DA). The separation is the appearance-calibration
+step, not parameter fitting.
 
-**S5 (designed 2026-09-20).** Unlabeled DA: calibrate on `splits/acdc_pool_unlabeled.txt`
-statistics only (1,200; no labels; never val/design). `src/synth/calibrate.py` → versioned
-`results/analysis/synth_stats.json`; `physics.py` samples **empirically/bounded** and renders
-via S3's `weather.apply` (parity by construction); fitted values **clipped to S3 ranges + logged**;
-night vignette fit→clip `[0.10,0.30]`+report. Same A/B, **same source and condition-per-source
-as S3** (paired), labels byte-copied, 80 epochs, S2-matched eval. Validation: **calibration
-self-test** + **closed-loop QA** (vs fitted targets and vs the real pool) + label/count/
-determinism/visibility/previews. Excluded from S5: row-depth fog, local night, per-image
-fitting, gradient/noise-energy matching (**blur is tested as S5b, below**); structural → S6c.
-Comparisons: S5↔S3 (calibration+access), **S5↔S4 (controlled access)**, S5↔S2 (structure vs photometric).
+**S5 (revised from pre-registered 2026-09-20).** Unlabeled DA: calibrate on
+`splits/acdc_pool_unlabeled.txt` statistics only (1,200; no labels; never val/design).
+`src/synth/calibrate.py` measures per-channel mean/std (+ saturation diagnostic) → versioned
+`results/calibration/synth_stats.json`; `physics.py` samples S3 operator params (identical
+structure to S3) and renders via `weather.apply`, then matches per-channel mean/std to a sampled
+target (saturation reported, not force-matched). Same A/B, **same source and condition-per-source
+as S3** (paired), labels byte-copied, 80 epochs, S2-matched eval. Validation: closed-loop
+appearance QA (mean/std diff <~2), label/count/condition-parity/determinism/visibility/previews.
+**Revision reason:** parameter-level physics inversion (direct + forward-curve/severity) is **not
+identifiable** across the BDD↔ACDC base-domain gap. Comparisons: S5↔S3 (appearance calibration,
+one factor), S5↔S2 (target-calibrated vs generic photometric), S5↔S4 (physics vs Fourier
+appearance). Excluded from S5: row-depth fog, local night, blur (tested as S5b).
 
 **S5b (blur ablation, planned 2026-09-20).** Ancillary one-factor ablation over S5:
 condition-specific blur (rain directional motion aligned to streak slant; fog/snow isotropic
@@ -237,7 +240,7 @@ scorer and is scored once per stage.
   `splits/acdc_pool_unlabeled.txt` (1,200 = 300/weather); official val untouched (406) and
   all kept manifests byte-identical (hash guard passed).
 - **S0–S6 design documented** in `PROJECT.md` §5/§6/§9/§10 and this file. Decisions locked:
-  offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 calibrated physics, design
+  offline synthesis, fixed 10k = 5k clear + 5k synthetic, S5 appearance calibration, design
   split, relabel to S/T IDs.
 - **S2 implemented + trained (2026-09-17):** `src/synth/` + `data/yolo/bdd_s2/`; inspector
   PASS; deterministic. **Result (official mAP@50): S2 0.2833 vs S1 0.2690 (+0.0143)**;
@@ -256,11 +259,13 @@ scorer and is scored once per stage.
   0.232→0.319); **rain 0.244→0.264**. Night (0.193→0.180) and fog (flat) fail; overall S3 is
   precision-heavy/recall-light. Reading: hand-set weather **ties S2 on 5-fold, below on
   official**; gains only where the physics is modelled. Write-up: `paper/results_notes.md`.
-- **S5 designed + pre-registered (2026-09-20):** calibrated physics, parameter-only; calibration
-  source = ACDC-train unlabeled pool stats (unlabeled DA); render via `weather.apply`; empirical
-  sampling; clip to S3 ranges + log; vignette fit→clip+report; calibration self-test; closed-loop
-  QA. Documented in `PROJECT.md` §2/§5/§10/§11 and `src/synth/AGENTS.md`. **Not implemented yet** —
-  next task is `src/synth/calibrate.py`.
+- **S5 implemented + built (2026-09-20), revised from pre-registered:** parameter-level physics
+  inversion was implemented and tested but is **not identifiable** across the BDD↔ACDC base-domain
+  gap; S5 redefined as **S3 structure + target-appearance calibration** (per-channel mean/std
+  matched; saturation diagnostic). `src/synth/{calibrate,physics,build_s5,inspect_s5}.py` +
+  `results/calibration/synth_stats.json` + `data/yolo/bdd_s5/`; `s5` registered in `stage_common`.
+  Inspector PASS (labels byte-identical, 1,250/condition, condition parity with S3, closed-loop
+  mean/std diff <~2), deterministic. **Awaiting train/eval.**
 - **S5b blur ablation designed (2026-09-20):** ancillary one-factor over S5; condition-specific
   blur calibrated to the pool; own pre-registered ranges; S5b-only sensor-calibration exception;
   Tier 0 preview → Tier 1 design-split probe → Tier 2 train if warranted; feeds S6a/S6b.
@@ -301,21 +306,16 @@ scorer and is scored once per stage.
 6. ~~**Train + eval S3**~~ — **done 2026-09-20** (official mAP@50 0.2741, 5-fold 0.2947,
    in-domain 0.4799; best BDD-trained snow result; findings in `PROJECT.md` §9 and
    `paper/results_notes.md`).
-7. **S5 (next; designed, not implemented):** build calibrated physics synthesis.
-   - `src/synth/calibrate.py` → `results/analysis/synth_stats.json` (+ calibration self-test).
-   - **Gate:** review fitted distributions vs S3 ranges; check clip frequency.
-   - `src/synth/physics.py` (sampler delegating to `weather.apply`) + `build_s5.py` → `data/yolo/bdd_s5/`.
-   - `src/synth/inspect_s5.py` (label/count/determinism/visibility + closed-loop QA).
-   - Train 80 epochs on `configs/bdd_s5.yaml`; S2-matched eval; `aggregate.py`/`visualize.py`.
-   - Write-up: `PROJECT.md` §9/§10, `paper/results_notes.md`, `HANDOFF.md`.
-8. **S5b (after S5, before S6 design):** blur ablation over S5.
-   - `src/synth/blur.py` (+ blur estimator in `calibrate.py`) → calibrated blur params in `synth_stats.json`.
-   - Tier 0: calibrated-blur preview + object-visibility.
-   - Tier 1: evaluate the trained S5 model on `splits/acdc_design.txt` with test-time blur →
-     `results/analysis/blur_probe/` (design split only; never official val).
-   - Tier 2 (if warranted): `build_s5b.py` → `data/yolo/bdd_s5b/`, train 80 epochs, S2-matched eval.
-   - Outcome feeds S6a/S6b. Then S6a/S6b; **S4 FDA** online (`src/aug/fda.py` + hook) — β chosen when we reach S4.
-9. Later: S6c, ratio ablations, supervised fine-tune, LOO, paper.
+7. ~~**S5 build**~~ — **done 2026-09-20 (revised from pre-registered):** parameter inversion
+   non-identifiable → S5 = **S3 structure + appearance calibration**. `calibrate.py` →
+   `results/calibration/synth_stats.json`; `physics.py` + `build_s5.py` → `data/yolo/bdd_s5/`;
+   `inspect_s5.py` PASS (condition parity with S3, closed-loop mean/std <~2); deterministic.
+8. **S5 train + eval (next):** 80 epochs on `configs/bdd_s5.yaml`, full S2-matched eval
+   (official + 5-fold + in-domain), then `aggregate.py`/`visualize.py` and the write-up
+   (`PROJECT.md` §9/§10, `paper/results_notes.md`, `HANDOFF.md`).
+9. **S5b (after S5, before S6 design):** blur ablation over S5 (Tier 0 preview → Tier 1
+   design-split probe → Tier 2 train if warranted); feeds S6a/S6b.
+10. Later: S6a/S6b, S4 FDA online (`src/aug/fda.py`), S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
 

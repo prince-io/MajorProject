@@ -190,15 +190,16 @@ the coarse night model spends precision it cannot recover.
 > (0.300 mAP@50, closing ~49% of the anchor-to-ceiling snow gap, with snow recall rising from
 > 0.232 to 0.319 at equal precision) and improves rain (0.264), whereas night and fog do not
 > improve — consistent with global dimming and constant-transmission fog being too crude and
-> motivating calibrated physics (S5).
+> motivating calibration (S5).
 
 ## What's next
 
-- **S5 — calibrated physics synthesis (designed 2026-09-20, not yet built):** parameter-only
-  calibration of S3's operators; calibrate on the ACDC-train **unlabeled pool** statistics (S5 =
-  unlabeled DA, not zero-shot); render via S3's `weather.apply`; empirical/bounded sampling; fit
-  clipped to S3 ranges + logged; calibration self-test + closed-loop QA. Use S3 as the hand-set
-  baseline.
+- **S5 — appearance-calibrated synthesis (built 2026-09-20, revised from pre-registered):** S3's
+  weather structure kept unchanged; S5 adds **target-appearance calibration** — per-channel
+  mean/std measured on the ACDC-train unlabeled pool and matched at generation (unlabeled DA;
+  saturation reported as a diagnostic). Parameter-level physics inversion was tested and found
+  non-identifiable across the BDD↔ACDC base-domain gap, hence the appearance pivot. One-factor
+  over S3; see `PROJECT.md` §5. **Awaiting train/eval.**
 - **S5b — calibrated blur ablation (planned, after S5):** ancillary one-factor over S5;
   condition-specific blur (rain directional motion, fog/snow defocus, night none) with strength
   calibrated to the ACDC-train pool; screened by a preview + a design-split sensitivity probe,

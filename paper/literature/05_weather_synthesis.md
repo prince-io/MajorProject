@@ -1,9 +1,10 @@
 # 05 — Weather Synthesis and Image Translation (S3 / S5 / S6)
 
 ## Why this matters
-S3 (simple weather transforms), S5 (calibrated physics), and S6 (combinations) are the core
+S3 (simple weather transforms), S5 (calibrated synthesis), and S6 (combinations) are the core
 of the study. This note separates **hand-designed physics**, **learned translation**, and
-**calibrated physics** so S3 and S5 stay distinct (a requirement from the peer review).
+**measurement-driven calibration** so S3 and S5 stay distinct (a requirement from the peer
+review). Note: the implemented S5 calibrates **appearance** (see the revision note below).
 
 ## A. Physics-based rendering (S3, S5)
 
@@ -67,16 +68,24 @@ is the natural comparison.
   the real distribution. Cite to frame "synthetic weather → real ACDC".
 
 ## S3 vs S5 — the distinction to defend
-| | S3 (simple) | S5 (calibrated physics) |
-|---|---|---|
-| Parameters | hand-set, fixed | **fit to measured ACDC-train statistics** (colour, contrast, haze, noise) |
-| Fog | constant transmission | dark-channel transmission + fitted `A`, `β` |
-| Rain | fixed streak kernel | depth-proxy streak size + motion blur, fitted density |
-| Snow | fixed particle sprite | fitted density/size + high-frequency energy |
-| Night | fixed gamma/blue shift | fitted illumination + black-level + noise |
-| Justification | fast baseline | principled, measurement-driven |
+> **Revised 2026-09-20:** per-parameter physics inversion was found non-identifiable across the
+> BDD↔ACDC base-domain gap; the implemented S5 keeps S3's structure and calibrates **global
+> appearance** (per-channel mean/std) to measured ACDC-train pool statistics. See `PROJECT.md` §5.
+> The table below is the *aspirational* physics-calibration framing retained for prior-art
+> positioning, not the implemented S5.
 
-**The S5 novelty is the calibration**, not the physics equations themselves. State this.
+| | S3 (simple) | S5 (calibrated) |
+|---|---|---|
+| Parameters | hand-set, fixed | **measured from ACDC-train pool statistics** |
+| Calibrated quantity (implemented) | — | **per-channel appearance (mean/std)**; physics structure unchanged |
+| Fog | constant transmission | (aspirational) dark-channel transmission + fitted `A`, `β` |
+| Rain | fixed streak kernel | (aspirational) depth-proxy streaks + fitted density |
+| Snow | fixed particle sprite | (aspirational) fitted density/size + high-frequency energy |
+| Night | fixed gamma/blue shift | (aspirational) fitted illumination + black-level + noise |
+| Justification | fast baseline | measurement-driven calibration |
+
+**The S5 contribution is the calibration to measured target statistics** (implemented as
+appearance calibration), not the physics equations themselves. State this.
 
 ## What to cite where
 - S3/S5 method: `koschmieder1924`, `he2009darkchannel`, `garg2006rain`, `garg2007visionrain`,

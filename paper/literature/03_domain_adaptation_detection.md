@@ -37,7 +37,7 @@ comparative study must carve a defensible niche.
 
 ## Where our study sits
 We compare **training-time data/adaptation strategies** (S2 photometric, S3 simple weather,
-S4 FDA, S5 calibrated physics, S6 combined) on a **single unified YOLO detector**, scored per
+S4 FDA, S5 appearance calibration, S6 combined) on a **single unified YOLO detector**, scored per
 weather. This is **not** a new adversarial DA method. The defensible contributions are:
 1. a controlled per-condition comparison (which strategy helps which weather);
 2. the **calibration** angle of S5 (physics parameters fit to measured target statistics);
