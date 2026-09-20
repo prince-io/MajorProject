@@ -296,12 +296,15 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
 
 ## What's next
 
-- **S5b — calibrated blur ablation (pre-registered + implemented 2026-09-20; next to run):**
-  ancillary one-factor over S5; `weather.apply → blur → appearance_match`; condition-specific
-  blur (rain directional motion, fog/snow defocus, night none) with strength fitted to the
-  ACDC-train pool by a forward-curve sharpness estimator (Tier 0 gate + preview fallback);
-  screened by a preview + a design-split sensitivity probe (`src/analysis/blur_probe.py`),
-  trained only if warranted. **S5b↔S5 is the clean comparison** (it is not folded into S5).
+- **S5b — calibrated blur ablation (Tier 0/1 done 2026-09-20; Tier 2 pending):** ancillary
+  one-factor over S5; `weather.apply → blur → appearance_match`; condition-specific blur (rain
+  directional motion, fog/snow defocus, night none) fitted to the ACDC-train pool by a
+  forward-curve sharpness estimator built on the S5 base (Tier 0 gate; closed-loop ≤0.021;
+  fitted fog σ 0.00136 / rain length 0.00555 / snow σ 0.00075). **Tier 1 design-split screen:**
+  test-time blur is ~flat for fog (peak +0.012 at the fitted strength), monotonically harmful
+  for rain (−0.051 at fitted), and beneficial for snow (+0.030 at fitted, +0.040 at 1.5×) — a
+  per-condition split, and a **screening heuristic only** (test-time sensitivity ≠ training-time
+  benefit). **S5b↔S5 is the clean comparison** (it is not folded into S5).
 - **S5 follow-ups:** investigate the **fog regression** (0.463) and whether the global appearance
   transfer should be softened; decide on a calibration sample-size ablation.
 - **S6a/S6b** — use S5 (best BDD-trained on official) as the natural base for the fixed combination

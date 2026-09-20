@@ -1,0 +1,20 @@
+S5b Tier 1 design-split blur probe (screening only; never official val)
+
+fog:
+  x0.0 frac=0.00000 mAP50=0.5117 n=100
+  x0.5 frac=0.00068 mAP50=0.5215 n=100
+  x1.0 frac=0.00136 mAP50=0.5236 n=100
+  x1.5 frac=0.00205 mAP50=0.5107 n=100
+  x2.0 frac=0.00273 mAP50=0.4856 n=100
+rain:
+  x0.0 frac=0.00000 mAP50=0.2770 n=100
+  x0.5 frac=0.00277 mAP50=0.2622 n=100
+  x1.0 frac=0.00555 mAP50=0.2256 n=100
+  x1.5 frac=0.00832 mAP50=0.1966 n=100
+  x2.0 frac=0.01110 mAP50=0.1966 n=100
+snow:
+  x0.0 frac=0.00000 mAP50=0.2798 n=100
+  x0.5 frac=0.00037 mAP50=0.2827 n=100
+  x1.0 frac=0.00075 mAP50=0.3098 n=100
+  x1.5 frac=0.00112 mAP50=0.3193 n=100
+  x2.0 frac=0.00150 mAP50=0.3106 n=100

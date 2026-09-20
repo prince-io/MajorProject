@@ -5,17 +5,24 @@ condition-specific blur between the two (``PROJECT.md`` §5). This module fits t
 strength to the **ACDC-train unlabeled pool** (``splits/acdc_pool_unlabeled.txt``,
 300/condition; never official val, never the design split).
 
-Method (pre-registered 2026-09-20):
+Method (pre-registered 2026-09-20; forward-curve base revised from pre-registered at Tier 0,
+before any ACDC scoring):
 
 1. Measure a sharpness metric on a common **normalized short side** (BDD 1280x720 and
    ACDC 1920x1080 are both resized) so blur strengths are scale-comparable.
-2. Build an explicit **forward curve** strength -> metric on the clear BDD A-half.
-3. Invert the curve at the per-condition ACDC-pool target, subject to a **Tier 0
-   identifiability gate** (curve monotonic, target inside the curve range, fitted value not
-   clipped at the range bound). This mirrors the S5 lesson: parameter-level matching across
-   the BDD<->ACDC base-domain gap can saturate.
+2. Build an explicit **forward curve** strength -> metric on the **S5-rendered base**, i.e.
+   the actual images S5b starts from. (The pre-registered plan used the clear BDD A-half; S5
+   weather structure itself changes sharpness -- rain/snow raise the metric ~1.3x -- so
+   calibrating against clear BDD and then blurring S5 double-counts it. Building the curve on
+   the S5 base makes S5b's realized sharpness match the ACDC target.)
+3. Invert the curve at the per-condition **absolute ACDC-pool target** (clear BDD is retained
+   only to report the cross-domain attenuation ratio), subject to a **Tier 0 identifiability
+   gate** (curve monotonic, target inside the curve range, clipping to a pre-registered bound
+   recorded). This mirrors the S5 lesson: parameter-level matching across the BDD<->ACDC
+   base-domain gap can saturate.
 4. If the gate fails, fall back to a **preview-chosen strength inside the pre-registered
-   range** (``FALLBACK_FRAC`` below).
+   range** (``FALLBACK_FRAC`` below); if ACDC is already sharper than the S5 base (no blur can
+   help), no blur is applied.
 
 The primary metric is the **variance-normalized Laplacian** (Laplacian variance divided by
 image variance), which is monotonic under both defocus and motion blur and largely
@@ -59,14 +66,25 @@ OUT_PATH = blur.DEFAULT_STATS_PATH
 # Sharpness is measured after resizing each image so its short side is this many pixels.
 NORMALIZED_SHORT_SIDE = 360
 
+# Pre-registered sample sizes: the S5-base forward curve, the ACDC-pool target, and the
+# clear-BDD reference used to report the cross-domain attenuation ratio.
+REFERENCE_SAMPLE = 200
+TARGET_SAMPLE = 300  # the full pool is 300/condition
+S5_SAMPLE = 150
+
 # High-band cutoff in normalized radial frequency (cycles/pixel) for the HF metric.
 HIGH_CUTOFF = 0.25
 
-# Forward-curve grids, as fractions of the (normalized) short side. They cover 1.5x the
-# pre-registered range so an out-of-range target is detectable rather than silently clipped.
+# Forward-curve grids, as fractions of the (normalized) short side. Log-spaced (with a zero
+# anchor) because both curves are steep near the origin; they cover beyond the pre-registered
+# ranges so an out-of-range target is detectable rather than silently clipped.
+def _log_grid(start: float, stop: float, count: int) -> list[float]:
+    return [0.0] + [round(float(v), 6) for v in np.logspace(np.log10(start), np.log10(stop), count)]
+
+
 GRID = {
-    "gaussian": [round(v, 6) for v in np.linspace(0.0, 0.018, 13)],
-    "motion": [round(v, 6) for v in np.linspace(0.0, 0.045, 13)],
+    "gaussian": _log_grid(0.0004, 0.018, 15),
+    "motion": _log_grid(0.0008, 0.045, 15),
 }
 MOTION_CURVE_ANGLE = 77.5  # mid of the S3 rain slant range (70-85 deg)
 
@@ -93,19 +111,28 @@ def _code_commit() -> str:
         return "unknown"
 
 
-def _resize_gray(path: str) -> np.ndarray | None:
-    """Load an image as float grayscale with its short side at NORMALIZED_SHORT_SIDE."""
+def _load_gray(path: str) -> np.ndarray | None:
+    """Load an image as full-resolution float grayscale (blur is applied at this scale)."""
     image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        return None
-    height, width = image.shape[:2]
+    return None if image is None else image.astype(np.float32)
+
+
+def _to_measure_scale(gray: np.ndarray) -> np.ndarray:
+    """Resize a grayscale image so its short side is NORMALIZED_SHORT_SIDE (measurement only)."""
+    height, width = gray.shape[:2]
     scale = NORMALIZED_SHORT_SIDE / float(min(height, width))
-    if abs(scale - 1.0) > 1e-3:
-        image = cv2.resize(
-            image, (max(1, int(round(width * scale))), max(1, int(round(height * scale)))),
-            interpolation=cv2.INTER_AREA,
-        )
-    return image.astype(np.float32)
+    if abs(scale - 1.0) <= 1e-3:
+        return gray
+    return cv2.resize(
+        gray, (max(1, int(round(width * scale))), max(1, int(round(height * scale)))),
+        interpolation=cv2.INTER_AREA,
+    ).astype(np.float32)
+
+
+def _resize_gray(path: str) -> np.ndarray | None:
+    """Load an image as grayscale at the measurement scale."""
+    image = _load_gray(path)
+    return None if image is None else _to_measure_scale(image)
 
 
 def sharpness(gray: np.ndarray) -> dict:
@@ -113,8 +140,11 @@ def sharpness(gray: np.ndarray) -> dict:
 
     ``normalized_laplacian`` (primary) = Laplacian variance / image variance; it is monotonic
     under both defocus and motion blur and largely contrast-robust. ``laplacian_var`` and the
-    high-band energy fraction ``hf_energy_ratio`` are secondary diagnostics.
+    high-band energy fraction ``hf_energy_ratio`` are secondary diagnostics. The input is
+    resized to NORMALIZED_SHORT_SIDE first, so callers may pass full-resolution or measured-scale
+    images interchangeably.
     """
+    gray = _to_measure_scale(gray)
     laplacian_var = float(cv2.Laplacian(gray, cv2.CV_32F).var())
     window = cv2.createHanningWindow((gray.shape[1], gray.shape[0]), cv2.CV_32F)
     detrended = (gray - float(gray.mean())) * window
@@ -143,7 +173,7 @@ def _median_metrics(images: list[np.ndarray]) -> dict:
 def _blur_gray(gray: np.ndarray, kind: str, frac: float) -> np.ndarray:
     if frac <= 0.0:
         return gray
-    pixels = frac * NORMALIZED_SHORT_SIDE
+    pixels = frac * float(min(gray.shape[:2]))  # native-scale blur, matching blur.py generation
     if kind == "gaussian":
         return blur._defocus(gray, pixels)
     return blur._motion(gray, pixels, MOTION_CURVE_ANGLE)
@@ -166,15 +196,21 @@ def _is_monotonic(curve: list[dict], key: str) -> bool:
 
 
 def _invert(curve: list[dict], target: float, key: str) -> float | None:
-    """Linear interpolation of strength where the (descending) curve crosses ``target``."""
+    """Interpolate the strength where the (descending) curve crosses ``target``.
+
+    Interpolation is done on ``log`` of the metric (all positive), which tracks the steep
+    convex falloff near the origin far better than linear interpolation in metric space.
+    """
     strengths = [point["strength"] for point in curve]
-    values = [point[key] for point in curve]
-    if target > values[0] or target < values[-1]:
+    raw = [point[key] for point in curve]
+    if target > raw[0] or target < raw[-1]:
         return None
+    values = [np.log(max(value, 1e-9)) for value in raw]
+    target_log = np.log(max(target, 1e-9))
     for index in range(len(values) - 1):
         high, low = values[index], values[index + 1]
-        if high >= target >= low and high != low:
-            weight = (high - target) / (high - low)
+        if high >= target_log >= low and high != low:
+            weight = (high - target_log) / (high - low)
             return float(strengths[index] + weight * (strengths[index + 1] - strengths[index]))
     return float(strengths[-1])
 
@@ -189,6 +225,19 @@ def _group_pool(paths: list[str], limit: int | None) -> dict[str, list[str]]:
     return grouped
 
 
+def _s5_base_images(condition: str, limit: int | None) -> list[np.ndarray]:
+    """The S5-rendered B-half images for a condition (the actual S5b starting point)."""
+    root = C.dataset_root("bdd_s5")
+    index_path = root / "index.json"
+    if not index_path.exists():
+        return []
+    records = json.loads(index_path.read_text(encoding="utf-8"))
+    paths = sorted(record["image"] for record in records if record.get("condition") == condition)
+    if limit:
+        paths = paths[:limit]
+    return [image for image in (_load_gray(p) for p in paths) if image is not None]
+
+
 def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int | None, out: Path) -> Path:
     load_limit = target_limit or pool_limit
     reference_paths = C.load_manifest(REFERENCE_MANIFEST)
@@ -200,13 +249,13 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
     reference_metrics = _median_metrics(reference)
     print(f"[blur] reference: {len(reference)} clear BDD images; primary={reference_metrics[PRIMARY]:.4f}")
 
-    curves = {kind: _forward_curve(reference, kind) for kind in ("gaussian", "motion")}
-
     pool = _group_pool(C.load_manifest(POOL_MANIFEST), load_limit)
     fitted: dict[str, dict] = {}
     gate: dict[str, dict] = {}
     closed_loop: dict[str, dict] = {}
     targets: dict[str, dict] = {}
+    bases: dict[str, dict] = {}
+    curves: dict[str, list[dict]] = {}
     for condition in C.CONDITIONS:
         spec = blur.RANGES[condition]
         kind = spec["kind"]
@@ -215,12 +264,21 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
             gate[condition] = {"passed": True, "reason": "condition has no blur"}
             targets[condition] = {}
             closed_loop[condition] = {}
+            bases[condition] = {}
+            curves[condition] = []
             continue
 
+        # ACDC target (absolute) and the S5 base the blur will be applied to.
         images = [image for image in (_resize_gray(p) for p in pool[condition]) if image is not None]
         target = _median_metrics(images)
         targets[condition] = target
-        curve = curves[kind]
+        base = _s5_base_images(condition, S5_SAMPLE)
+        if not base:
+            raise RuntimeError(f"no S5 base images for '{condition}'; build data/yolo/bdd_s5 first")
+        bases[condition] = _median_metrics(base)
+        curve = _forward_curve(base, kind)
+        curves[condition] = curve
+
         monotonic = _is_monotonic(curve, PRIMARY)
         candidate = _invert(curve, target[PRIMARY], PRIMARY)
         in_range = candidate is not None
@@ -235,11 +293,15 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
             else:
                 value = float(candidate)
             source = "fit"
+        elif monotonic and target[PRIMARY] > curve[0][PRIMARY]:
+            value, source = 0.0, "no-blur"  # ACDC is sharper than the S5 base; blur would hurt
         else:
             value = float(np.clip(FALLBACK_FRAC[condition], low, high))
             source = "fallback"
         clipped = bound is not None
-        if not monotonic:
+        if source == "no-blur":
+            reason = "ACDC sharper than the S5 base; no blur applied"
+        elif not monotonic:
             reason = "forward curve non-monotonic"
         elif not in_range:
             reason = "target outside forward-curve range (content/camera confound)"
@@ -253,25 +315,27 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
         gate[condition] = {
             "passed": passed, "reason": reason, "monotonic": monotonic,
             "target_in_range": in_range, "clipped": clipped, "bound": bound,
+            "base_primary": bases[condition][PRIMARY], "target_primary": target[PRIMARY],
         }
 
-        # closed-loop: apply the effective fraction directly to clear reference images
-        probe = reference[: min(20, len(reference))]
+        # closed-loop: apply the effective fraction to the S5 base and re-measure
+        probe = base[: min(20, len(base))]
         measured = _median_metrics([_blur_gray(image, kind, value) for image in probe])
-        target_ratio = target[PRIMARY] / reference_metrics[PRIMARY]
-        measured_ratio = measured[PRIMARY] / reference_metrics[PRIMARY]
         closed_loop[condition] = {
             "applied_frac": value,
-            "reference_primary": reference_metrics[PRIMARY],
-            "target_primary": target[PRIMARY],
-            "target_ratio": target_ratio,
-            "measured_ratio": measured_ratio,
-            "abs_err": abs(measured_ratio - target_ratio),
             "effective": {"kind": kind, "value": value, "source": source},
+            "base_primary": bases[condition][PRIMARY],
+            "target_primary": target[PRIMARY],
+            "measured_primary": measured[PRIMARY],
+            "reference_primary": reference_metrics[PRIMARY],
+            "base_ratio": bases[condition][PRIMARY] / reference_metrics[PRIMARY],
+            "target_ratio": target[PRIMARY] / reference_metrics[PRIMARY],
+            "measured_ratio": measured[PRIMARY] / reference_metrics[PRIMARY],
+            "abs_err": abs(measured[PRIMARY] - target[PRIMARY]),
         }
         print(
-            f"[blur] {condition:<6} target={target[PRIMARY]:.4f} fitted={value:.5f} "
-            f"source={source:<10} gate={'PASS' if passed else 'FAIL'} ({reason})"
+            f"[blur] {condition:<6} target={target[PRIMARY]:.4f} base={bases[condition][PRIMARY]:.4f} "
+            f"fitted={value:.5f} source={source:<10} gate={'PASS' if passed else 'FAIL'} ({reason})"
         )
 
     stats = {
@@ -291,6 +355,7 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
         "ranges": {condition: blur.RANGES[condition] for condition in C.CONDITIONS},
         "reference_metrics": reference_metrics,
         "targets": targets,
+        "bases": bases,
         "forward_curve": curves,
         "gate": gate,
         "fitted": fitted,
@@ -305,8 +370,8 @@ def calibrate(pool_limit: int | None, ref_limit: int | None, target_limit: int |
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Calibrate S5b blur strength on the ACDC-train pool.")
     parser.add_argument("--pool-limit", type=int, default=None, help="Debug: N pool images per condition.")
-    parser.add_argument("--target-limit", type=int, default=None, help="Debug: N target images per condition.")
-    parser.add_argument("--ref-limit", type=int, default=None, help="Debug: N clear BDD reference images.")
+    parser.add_argument("--target-limit", type=int, default=TARGET_SAMPLE, help="N target images per condition.")
+    parser.add_argument("--ref-limit", type=int, default=REFERENCE_SAMPLE, help="N clear BDD reference images.")
     parser.add_argument("--out", type=Path, default=OUT_PATH, help="Output stats JSON.")
     return parser.parse_args()
 

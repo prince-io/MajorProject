@@ -1,0 +1,504 @@
+{
+  "version": "1.0",
+  "generated": "2026-09-20T21:21:13",
+  "seed": 42,
+  "code_commit": "407f141",
+  "source_pool": "/home/ps/Desktop/major_project/splits/acdc_pool_unlabeled.txt",
+  "source_pool_hash": "23e0519095d74b56",
+  "reference_manifest": "/home/ps/Desktop/major_project/splits/bdd_src_A_clear.txt",
+  "n_pool": 1200,
+  "n_reference": 200,
+  "normalized_short_side": 360,
+  "high_cutoff": 0.25,
+  "primary_metric": "normalized_laplacian",
+  "metrics": [
+    "normalized_laplacian",
+    "laplacian_var",
+    "hf_energy_ratio"
+  ],
+  "ranges": {
+    "fog": {
+      "kind": "gaussian",
+      "metric_frac": [
+        0.001,
+        0.012
+      ]
+    },
+    "night": {
+      "kind": "none",
+      "metric_frac": [
+        0.0,
+        0.0
+      ]
+    },
+    "rain": {
+      "kind": "motion",
+      "metric_frac": [
+        0.0015,
+        0.03
+      ]
+    },
+    "snow": {
+      "kind": "gaussian",
+      "metric_frac": [
+        0.0003,
+        0.008
+      ]
+    }
+  },
+  "reference_metrics": {
+    "normalized_laplacian": 0.25710446847056223,
+    "laplacian_var": 866.6208801269531,
+    "hf_energy_ratio": 0.02187347874331818
+  },
+  "targets": {
+    "fog": {
+      "normalized_laplacian": 0.07677878789461787,
+      "laplacian_var": 313.41424560546875,
+      "hf_energy_ratio": 0.006103933962068903
+    },
+    "night": {},
+    "rain": {
+      "normalized_laplacian": 0.14602421747390126,
+      "laplacian_var": 843.3538208007812,
+      "hf_energy_ratio": 0.01119574374919307
+    },
+    "snow": {
+      "normalized_laplacian": 0.2459952910833328,
+      "laplacian_var": 866.7525939941406,
+      "hf_energy_ratio": 0.018274159778059802
+    }
+  },
+  "bases": {
+    "fog": {
+      "normalized_laplacian": 0.24750575794274932,
+      "laplacian_var": 870.9218139648438,
+      "hf_energy_ratio": 0.021488748001175412
+    },
+    "night": {},
+    "rain": {
+      "normalized_laplacian": 0.34977306608372527,
+      "laplacian_var": 1641.049560546875,
+      "hf_energy_ratio": 0.029455412878629947
+    },
+    "snow": {
+      "normalized_laplacian": 0.3382395883371965,
+      "laplacian_var": 1111.9552612304688,
+      "hf_energy_ratio": 0.026159389106244855
+    }
+  },
+  "forward_curve": {
+    "fog": [
+      {
+        "normalized_laplacian": 0.24750575794274932,
+        "laplacian_var": 870.9218139648438,
+        "hf_energy_ratio": 0.021488748001175412,
+        "strength": 0.0
+      },
+      {
+        "normalized_laplacian": 0.24582132583052038,
+        "laplacian_var": 865.1175842285156,
+        "hf_energy_ratio": 0.021361108868759172,
+        "strength": 0.0004
+      },
+      {
+        "normalized_laplacian": 0.22826216166736868,
+        "laplacian_var": 803.4227905273438,
+        "hf_energy_ratio": 0.019943944616689864,
+        "strength": 0.000525
+      },
+      {
+        "normalized_laplacian": 0.1830799798775339,
+        "laplacian_var": 637.9943237304688,
+        "hf_energy_ratio": 0.01644465800985468,
+        "strength": 0.000689
+      },
+      {
+        "normalized_laplacian": 0.13762074825346043,
+        "laplacian_var": 471.39141845703125,
+        "hf_energy_ratio": 0.01257590440328017,
+        "strength": 0.000904
+      },
+      {
+        "normalized_laplacian": 0.09684677469163733,
+        "laplacian_var": 334.19654846191406,
+        "hf_energy_ratio": 0.008752894886747426,
+        "strength": 0.001187
+      },
+      {
+        "normalized_laplacian": 0.05950382557959233,
+        "laplacian_var": 207.35186767578125,
+        "hf_energy_ratio": 0.005090730868974108,
+        "strength": 0.001558
+      },
+      {
+        "normalized_laplacian": 0.033703965858812746,
+        "laplacian_var": 116.85956954956055,
+        "hf_energy_ratio": 0.0022076525000794232,
+        "strength": 0.002044
+      },
+      {
+        "normalized_laplacian": 0.016824443962826712,
+        "laplacian_var": 58.13154411315918,
+        "hf_energy_ratio": 0.0006056130074537122,
+        "strength": 0.002683
+      },
+      {
+        "normalized_laplacian": 0.007784460262730908,
+        "laplacian_var": 25.62262535095215,
+        "hf_energy_ratio": 7.796043118341774e-05,
+        "strength": 0.003522
+      },
+      {
+        "normalized_laplacian": 0.003294561996999759,
+        "laplacian_var": 10.736459255218506,
+        "hf_energy_ratio": 3.026434012213347e-06,
+        "strength": 0.004622
+      },
+      {
+        "normalized_laplacian": 0.0013615095024068612,
+        "laplacian_var": 4.414150953292847,
+        "hf_energy_ratio": 1.0339692823415293e-07,
+        "strength": 0.006066
+      },
+      {
+        "normalized_laplacian": 0.0005574900094573651,
+        "laplacian_var": 1.7618995308876038,
+        "hf_energy_ratio": 8.854779163208786e-08,
+        "strength": 0.007962
+      },
+      {
+        "normalized_laplacian": 0.00022175945359303366,
+        "laplacian_var": 0.6726652681827545,
+        "hf_energy_ratio": 8.997041800074432e-08,
+        "strength": 0.01045
+      },
+      {
+        "normalized_laplacian": 9.088762066718053e-05,
+        "laplacian_var": 0.2599383294582367,
+        "hf_energy_ratio": 9.148196919949486e-08,
+        "strength": 0.013715
+      },
+      {
+        "normalized_laplacian": 3.736085852734902e-05,
+        "laplacian_var": 0.09735169634222984,
+        "hf_energy_ratio": 9.373413139802955e-08,
+        "strength": 0.018
+      }
+    ],
+    "night": [],
+    "rain": [
+      {
+        "normalized_laplacian": 0.34977306608372527,
+        "laplacian_var": 1641.049560546875,
+        "hf_energy_ratio": 0.029455412878629947,
+        "strength": 0.0
+      },
+      {
+        "normalized_laplacian": 0.31329851917174906,
+        "laplacian_var": 1450.0512084960938,
+        "hf_energy_ratio": 0.02624607123361419,
+        "strength": 0.0008
+      },
+      {
+        "normalized_laplacian": 0.29966584400329854,
+        "laplacian_var": 1392.7944946289062,
+        "hf_energy_ratio": 0.025302978132752837,
+        "strength": 0.001067
+      },
+      {
+        "normalized_laplacian": 0.28326058298665924,
+        "laplacian_var": 1320.7530517578125,
+        "hf_energy_ratio": 0.02418490978706335,
+        "strength": 0.001423
+      },
+      {
+        "normalized_laplacian": 0.26330099225644105,
+        "laplacian_var": 1232.8359985351562,
+        "hf_energy_ratio": 0.022624458747754227,
+        "strength": 0.001897
+      },
+      {
+        "normalized_laplacian": 0.23969608511117646,
+        "laplacian_var": 1126.884765625,
+        "hf_energy_ratio": 0.02080802095898806,
+        "strength": 0.00253
+      },
+      {
+        "normalized_laplacian": 0.2102131912075541,
+        "laplacian_var": 984.638427734375,
+        "hf_energy_ratio": 0.018701512556406705,
+        "strength": 0.003374
+      },
+      {
+        "normalized_laplacian": 0.17276769250635288,
+        "laplacian_var": 802.9931335449219,
+        "hf_energy_ratio": 0.01551342611599531,
+        "strength": 0.004499
+      },
+      {
+        "normalized_laplacian": 0.13580756072551337,
+        "laplacian_var": 635.1344299316406,
+        "hf_energy_ratio": 0.011931256593321997,
+        "strength": 0.006
+      },
+      {
+        "normalized_laplacian": 0.10471362135638002,
+        "laplacian_var": 486.74583435058594,
+        "hf_energy_ratio": 0.009075809225719926,
+        "strength": 0.008001
+      },
+      {
+        "normalized_laplacian": 0.08224226654816108,
+        "laplacian_var": 381.8496398925781,
+        "hf_energy_ratio": 0.0073306950911384994,
+        "strength": 0.01067
+      },
+      {
+        "normalized_laplacian": 0.06683939854235646,
+        "laplacian_var": 300.9316101074219,
+        "hf_energy_ratio": 0.00606453834978476,
+        "strength": 0.014229
+      },
+      {
+        "normalized_laplacian": 0.0518194030649722,
+        "laplacian_var": 225.86782836914062,
+        "hf_energy_ratio": 0.004680474110486117,
+        "strength": 0.018975
+      },
+      {
+        "normalized_laplacian": 0.04057647357840061,
+        "laplacian_var": 171.3545684814453,
+        "hf_energy_ratio": 0.003522627170991036,
+        "strength": 0.025304
+      },
+      {
+        "normalized_laplacian": 0.03151963730464112,
+        "laplacian_var": 126.76426315307617,
+        "hf_energy_ratio": 0.0027437928236499045,
+        "strength": 0.033745
+      },
+      {
+        "normalized_laplacian": 0.024037801228908626,
+        "laplacian_var": 92.54861450195312,
+        "hf_energy_ratio": 0.0021642128312563584,
+        "strength": 0.045
+      }
+    ],
+    "snow": [
+      {
+        "normalized_laplacian": 0.3382395883371965,
+        "laplacian_var": 1111.9552612304688,
+        "hf_energy_ratio": 0.026159389106244855,
+        "strength": 0.0
+      },
+      {
+        "normalized_laplacian": 0.3362246015151041,
+        "laplacian_var": 1104.3256225585938,
+        "hf_energy_ratio": 0.025996158196328577,
+        "strength": 0.0004
+      },
+      {
+        "normalized_laplacian": 0.31683913673868824,
+        "laplacian_var": 1024.5894165039062,
+        "hf_energy_ratio": 0.024283695560079234,
+        "strength": 0.000525
+      },
+      {
+        "normalized_laplacian": 0.26518371670923946,
+        "laplacian_var": 839.0736999511719,
+        "hf_energy_ratio": 0.020040303956600725,
+        "strength": 0.000689
+      },
+      {
+        "normalized_laplacian": 0.20292656356895689,
+        "laplacian_var": 639.1492614746094,
+        "hf_energy_ratio": 0.015258427318994098,
+        "strength": 0.000904
+      },
+      {
+        "normalized_laplacian": 0.1504143007519177,
+        "laplacian_var": 467.6290588378906,
+        "hf_energy_ratio": 0.011034418193135928,
+        "strength": 0.001187
+      },
+      {
+        "normalized_laplacian": 0.0988565122198257,
+        "laplacian_var": 311.9701385498047,
+        "hf_energy_ratio": 0.006491049960156876,
+        "strength": 0.001558
+      },
+      {
+        "normalized_laplacian": 0.0584449545726084,
+        "laplacian_var": 180.1758804321289,
+        "hf_energy_ratio": 0.0029678249726291977,
+        "strength": 0.002044
+      },
+      {
+        "normalized_laplacian": 0.031107177979006466,
+        "laplacian_var": 95.85673522949219,
+        "hf_energy_ratio": 0.0008283816210974066,
+        "strength": 0.002683
+      },
+      {
+        "normalized_laplacian": 0.015443554893829863,
+        "laplacian_var": 45.48002052307129,
+        "hf_energy_ratio": 0.00010915126934374352,
+        "strength": 0.003522
+      },
+      {
+        "normalized_laplacian": 0.0068057748143455655,
+        "laplacian_var": 19.399250984191895,
+        "hf_energy_ratio": 4.30695191256373e-06,
+        "strength": 0.004622
+      },
+      {
+        "normalized_laplacian": 0.0027052090855504834,
+        "laplacian_var": 7.378229141235352,
+        "hf_energy_ratio": 1.0556275824399583e-07,
+        "strength": 0.006066
+      },
+      {
+        "normalized_laplacian": 0.0010040603365457212,
+        "laplacian_var": 2.6437594890594482,
+        "hf_energy_ratio": 8.552713792845205e-08,
+        "strength": 0.007962
+      },
+      {
+        "normalized_laplacian": 0.0003507839304460518,
+        "laplacian_var": 0.9166024625301361,
+        "hf_energy_ratio": 8.858848077878911e-08,
+        "strength": 0.01045
+      },
+      {
+        "normalized_laplacian": 0.00012469516934596235,
+        "laplacian_var": 0.30696506798267365,
+        "hf_energy_ratio": 9.184921191563551e-08,
+        "strength": 0.013715
+      },
+      {
+        "normalized_laplacian": 4.624633174585603e-05,
+        "laplacian_var": 0.10718375444412231,
+        "hf_energy_ratio": 9.653106331197192e-08,
+        "strength": 0.018
+      }
+    ]
+  },
+  "gate": {
+    "fog": {
+      "passed": true,
+      "reason": "ok",
+      "monotonic": true,
+      "target_in_range": true,
+      "clipped": false,
+      "bound": null,
+      "base_primary": 0.24750575794274932,
+      "target_primary": 0.07677878789461787
+    },
+    "night": {
+      "passed": true,
+      "reason": "condition has no blur"
+    },
+    "rain": {
+      "passed": true,
+      "reason": "ok",
+      "monotonic": true,
+      "target_in_range": true,
+      "clipped": false,
+      "bound": null,
+      "base_primary": 0.34977306608372527,
+      "target_primary": 0.14602421747390126
+    },
+    "snow": {
+      "passed": true,
+      "reason": "ok",
+      "monotonic": true,
+      "target_in_range": true,
+      "clipped": false,
+      "bound": null,
+      "base_primary": 0.3382395883371965,
+      "target_primary": 0.2459952910833328
+    }
+  },
+  "fitted": {
+    "fog": {
+      "kind": "gaussian",
+      "value": 0.0013638603680805072,
+      "source": "fit",
+      "clipped": false,
+      "bound": null
+    },
+    "night": {
+      "kind": "none",
+      "value": 0.0,
+      "source": "none",
+      "clipped": false,
+      "bound": null
+    },
+    "rain": {
+      "kind": "motion",
+      "value": 0.005547698971185083,
+      "source": "fit",
+      "clipped": false,
+      "bound": null
+    },
+    "snow": {
+      "kind": "gaussian",
+      "value": 0.0007493514014281618,
+      "source": "fit",
+      "clipped": false,
+      "bound": null
+    }
+  },
+  "closed_loop": {
+    "fog": {
+      "applied_frac": 0.0013638603680805072,
+      "effective": {
+        "kind": "gaussian",
+        "value": 0.0013638603680805072,
+        "source": "fit"
+      },
+      "base_primary": 0.24750575794274932,
+      "target_primary": 0.07677878789461787,
+      "measured_primary": 0.06504577948026258,
+      "reference_primary": 0.25710446847056223,
+      "base_ratio": 0.9626661077307883,
+      "target_ratio": 0.29862875721823107,
+      "measured_ratio": 0.2529935783193521,
+      "abs_err": 0.01173300841435529
+    },
+    "night": {},
+    "rain": {
+      "applied_frac": 0.005547698971185083,
+      "effective": {
+        "kind": "motion",
+        "value": 0.005547698971185083,
+        "source": "fit"
+      },
+      "base_primary": 0.34977306608372527,
+      "target_primary": 0.14602421747390126,
+      "measured_primary": 0.152211721750727,
+      "reference_primary": 0.25710446847056223,
+      "base_ratio": 1.3604316881943783,
+      "target_ratio": 0.5679567466973864,
+      "measured_ratio": 0.5920228561416654,
+      "abs_err": 0.006187504276825739
+    },
+    "snow": {
+      "applied_frac": 0.0007493514014281618,
+      "effective": {
+        "kind": "gaussian",
+        "value": 0.0007493514014281618,
+        "source": "fit"
+      },
+      "base_primary": 0.3382395883371965,
+      "target_primary": 0.2459952910833328,
+      "measured_primary": 0.2250827265676733,
+      "reference_primary": 0.25710446847056223,
+      "base_ratio": 1.3155725777513043,
+      "target_ratio": 0.9567911928823539,
+      "measured_ratio": 0.8754524100908214,
+      "abs_err": 0.020912564515659482
+    }
+  }
+}

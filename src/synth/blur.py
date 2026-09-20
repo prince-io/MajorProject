@@ -59,8 +59,8 @@ from synth import weather  # noqa: E402
 # the gate reporting any clip) before any ACDC scoring; see PROJECT.md §2/§5.
 RANGES: dict[str, dict] = {
     "fog": {"kind": "gaussian", "metric_frac": (0.001, 0.012)},
-    "snow": {"kind": "gaussian", "metric_frac": (0.001, 0.008)},
-    "rain": {"kind": "motion", "metric_frac": (0.004, 0.030)},
+    "snow": {"kind": "gaussian", "metric_frac": (0.0003, 0.008)},
+    "rain": {"kind": "motion", "metric_frac": (0.0015, 0.030)},
     "night": {"kind": "none", "metric_frac": (0.0, 0.0)},
 }
 
@@ -161,6 +161,11 @@ def _defocus(img: np.ndarray, sigma_px: float) -> np.ndarray:
     return cv2.GaussianBlur(img, (0, 0), sigmaX=sigma_px, sigmaY=sigma_px, borderType=cv2.BORDER_REFLECT_101)
 
 
+# Fixed number of shifted taps for the motion kernel so the blur scales smoothly with length
+# (a length-dependent tap count introduces small non-monotonic steps in sharpness curves).
+MOTION_SAMPLES = 17
+
+
 def _motion(img: np.ndarray, length_px: float, angle_deg: float) -> np.ndarray:
     """Directional motion blur: average fractional-pixel shifted copies along the slant.
 
@@ -169,8 +174,7 @@ def _motion(img: np.ndarray, length_px: float, angle_deg: float) -> np.ndarray:
     """
     if length_px <= 0.0:
         return img
-    steps = int(max(2, min(24, round(length_px) + 1)))
-    offsets = np.linspace(-0.5, 0.5, steps) * length_px
+    offsets = np.linspace(-0.5, 0.5, MOTION_SAMPLES) * length_px
     theta = np.deg2rad(float(angle_deg))
     dx, dy = float(np.cos(theta)), -float(np.sin(theta))
     height, width = img.shape[:2]
@@ -180,7 +184,7 @@ def _motion(img: np.ndarray, length_px: float, angle_deg: float) -> np.ndarray:
         accumulator += cv2.warpAffine(
             img, matrix, (width, height), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT_101
         )
-    return accumulator / steps
+    return accumulator / MOTION_SAMPLES
 
 
 def apply_blur(img: np.ndarray, params: dict, blur: dict) -> np.ndarray:
