@@ -38,14 +38,14 @@
   gains are small but the per-condition explanation is crisp.
 - **Fallback:** B.Tech thesis only, no paper, if gains are inconclusive.
 
-## Critical protocol caveat to resolve
-- **S5 uses ACDC-train images (unlabeled) to calibrate parameters.** That means S5 is **not
-  strictly zero-shot** — it is closer to unlabeled DA for the calibration step. Decide and
-  state the rule precisely:
-  - calibration-only statistics (colour/contrast/noise) = arguably mild UDA; or
-  - calibrate on ACDC **design split** only, keeping the scored val untouched; or
-  - calibrate on BDD **adverse-looking** stats only (fully zero-shot).
-  This choice must be pre-registered in `PROJECT.md` before S5 runs.
+## S5 calibration protocol (resolved 2026-09-20)
+- **S5 calibrates on the ACDC-train unlabeled pool only** (`splits/acdc_pool_unlabeled.txt`,
+  1,200 = 300/condition), **statistics only, no labels**; never official val, never the design
+  split. S5 is therefore **unlabeled domain adaptation**, not zero-shot. Pre-registered in
+  `PROJECT.md` §2/§5/§10.
+- Consequence to state: S5↔S3 varies calibration **and** target access; **S5↔S4** (same pool,
+  physics-structured synthesis vs Fourier appearance adaptation) is the controlled
+  equal-access comparison.
 
 ## Unverified tags carried from earlier notes
 - **"MIC (CVPR 2023)"** — no matching title found via the arXiv API. Likely refers to the

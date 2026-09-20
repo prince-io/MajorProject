@@ -27,7 +27,7 @@
 - `aggregate.py` scans `results/experiments/*/eval/*.json`, groups by experiment (stripping `_official`/`_foldN`), computes mean±std across folds, and writes `results/summary/summary.json`, `per_class.csv`, and `per_class.md`.
 - `visualize.py` writes per-experiment figures (`training_curves.png`, `bars_*.png`), cross-experiment comparisons, and a `class_weather_<exp>.png` heatmap under `results/summary/figures/`.
 - Pipeline order: `convert_acdc.py` → `convert_bdd.py` → `build_splits.py` → `write_configs.py` → `materialize.py` → `prune_labels.py` → per-stage synthesis (`synth/build_dataset.py --stage s2`, `synth/build_s3.py`, ...) → `train.py --exp` → `eval.py --exp` → `aggregate.py` → `visualize.py`.
-- `src/synth/` experiment code is **append-only**: a stage's generator is frozen once its result is locked (S2 = `photometric.py`/`build_dataset.py`/`inspect_s2.py`); later stages add their own modules (S3 = `weather.py`/`build_s3.py`/`inspect_s3.py`) on the shared `synth/stage_common.py` harness. Never overwrite an earlier stage's code.
+- `src/synth/` experiment code is **append-only**: a stage's generator is frozen once its result is locked (S2 = `photometric.py`/`build_dataset.py`/`inspect_s2.py`; S3 = `weather.py`/`build_s3.py`/`inspect_s3.py`). Later stages add their own modules on the shared `synth/stage_common.py` harness (S5 = `calibrate.py`/`physics.py`/`build_s5.py`/`inspect_s5.py`; S5b = `blur.py`/`build_s5b.py`). Never overwrite an earlier stage's code.
 
 ## Work Guidance
 

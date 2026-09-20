@@ -194,11 +194,18 @@ the coarse night model spends precision it cannot recover.
 
 ## What's next
 
-- **S5 — calibrated physics synthesis (next):** fit the same model families (Koschmieder/dark-
-  channel transmission, rain density, snow, night illumination) to **measured ACDC-train
-  statistics**; use the S3 results above as the hand-set baseline.
-- **S4 FDA** online (`src/aug/fda.py` + hook); β chosen when we reach S4.
-- Decide per the reviewer: S4 β set (restore 0.01?), seeds (3 for S1/S6), S5 calibration source.
+- **S5 — calibrated physics synthesis (designed 2026-09-20, not yet built):** parameter-only
+  calibration of S3's operators; calibrate on the ACDC-train **unlabeled pool** statistics (S5 =
+  unlabeled DA, not zero-shot); render via S3's `weather.apply`; empirical/bounded sampling; fit
+  clipped to S3 ranges + logged; calibration self-test + closed-loop QA. Use S3 as the hand-set
+  baseline.
+- **S5b — calibrated blur ablation (planned, after S5):** ancillary one-factor over S5;
+  condition-specific blur (rain directional motion, fog/snow defocus, night none) with strength
+  calibrated to the ACDC-train pool; screened by a preview + a design-split sensitivity probe,
+  trained only if warranted. **S5b↔S5 is the clean comparison** (it is not folded into S5).
+- **S4 FDA** online (`src/aug/fda.py` + hook); β chosen when we reach S4. S4↔S5 (same pool) is the
+  controlled equal-access comparison.
+- Decide per the reviewer: S4 β set (restore 0.01?), seeds (3 for S1/S6).
 - Add per-class **official** numbers for all stages and the zero-shot vs unlabeled-DA setting column to the main table.
 
 ## Figure / table inventory
