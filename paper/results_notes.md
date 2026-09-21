@@ -102,8 +102,8 @@ fog 0.52, rain 0.90, snow 1.04, night 0.40. Previews:
 | mAP@50-95 (official) | 0.1559 | **0.1650** | 0.1573 | 0.1957 |
 | Precision (official) | 0.4613 | 0.4343 | **0.5315** | 0.5391 |
 | Recall (official) | 0.2655 | **0.2715** | 0.2444 | 0.2889 |
-| 5-fold mAP@50 | 0.2863 ± 0.0124 | 0.2933 ± 0.0144 | **0.2947 ± 0.0119** | 0.3827 ± 0.0187 |
-| 5-fold mAP@50-95 | 0.1609 ± 0.0060 | 0.1643 ± 0.0087 | **0.1665 ± 0.0080** | 0.2214 ± 0.0106 |
+| 5-fold mAP@50 | 0.2863 ± 0.0138 | 0.2933 ± 0.0161 | **0.2947 ± 0.0133** | 0.3827 ± 0.0210 |
+| 5-fold mAP@50-95 | 0.1609 ± 0.0067 | 0.1643 ± 0.0098 | **0.1665 ± 0.0089** | 0.2214 ± 0.0118 |
 | In-domain BDD mAP@50 | 0.4911 | 0.4920 | 0.4799 | — |
 | Headroom captured (S1→ceiling) | — | 28% | 10% | 100% |
 
@@ -172,7 +172,7 @@ the coarse night model spends precision it cannot recover.
 ### Caveats to state
 
 - **Single seed.** The S2↔S3 official difference (~0.010) is within the 5-fold spread
-  (±0.012–0.014); do not claim S3 is better or worse than S2 from one seed.
+  (±0.013–0.016); do not claim S3 is better or worse than S2 from one seed.
 - **Official vs 5-fold ordering differs** (official val is harder); the snow-over-S2 result is
   official-split-specific and within noise across folds.
 - **Small per-class cells** (bus, bicycle, rider) are noisy — do not over-read single-class moves.
@@ -210,8 +210,8 @@ appearance. Same 80-epoch schedule (best @66).
 | mAP@50-95 (official) | 0.1559 | 0.1650 | 0.1573 | 0.1642 | 0.1957 |
 | Precision (official) | 0.4613 | 0.4343 | **0.5315** | 0.4614 | 0.5391 |
 | Recall (official) | 0.2655 | 0.2715 | 0.2444 | **0.3007** | 0.2889 |
-| 5-fold mAP@50 | 0.2863 ± 0.0124 | 0.2933 ± 0.0144 | 0.2947 ± 0.0119 | **0.2951 ± 0.0132** | 0.3827 ± 0.0187 |
-| 5-fold mAP@50-95 | 0.1609 ± 0.0060 | 0.1643 ± 0.0087 | 0.1665 ± 0.0080 | **0.1670 ± 0.0064** | 0.2214 ± 0.0106 |
+| 5-fold mAP@50 | 0.2863 ± 0.0138 | 0.2933 ± 0.0161 | 0.2947 ± 0.0133 | **0.2951 ± 0.0148** | 0.3827 ± 0.0210 |
+| 5-fold mAP@50-95 | 0.1609 ± 0.0067 | 0.1643 ± 0.0098 | 0.1665 ± 0.0089 | **0.1670 ± 0.0071** | 0.2214 ± 0.0118 |
 | In-domain BDD mAP@50 | 0.4911 | 0.4920 | 0.4799 | 0.4877 | — |
 | Headroom captured (S1→ceiling) | — | 28% | 10% | **49%** | 100% |
 
@@ -277,7 +277,7 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
 
 ### Caveats to state
 
-- **Single seed.** The S3→S5 official gap (+0.020) exceeds the fold spread (±0.013), but the
+- **Single seed.** The S3→S5 official gap (+0.020) exceeds the fold spread (±0.015), but the
   5-fold tie (~0.295 across S2/S3/S5) means the official advantage is not corroborated across folds.
 - **Appearance transfer is global and unconstrained**; it produces strong colour casts and may be
   over-aggressive (notably night/rain, and the fog regression).
@@ -312,7 +312,7 @@ only clean one-factor comparison (same A/B, same condition-per-source, seed 42, 
 | mAP@50-95 | 0.156 | 0.165 | 0.157 | 0.164 | 0.160 |
 | Precision | 0.461 | 0.434 | 0.532 | 0.461 | 0.535 |
 | Recall | 0.266 | 0.272 | 0.244 | 0.301 | 0.278 |
-| 5-fold mAP@50 | 0.286 ± 0.014 | 0.293 ± 0.016 | 0.295 ± 0.012 | 0.295 ± 0.013 | **0.281 ± 0.011** |
+| 5-fold mAP@50 | 0.286 ± 0.014 | 0.293 ± 0.016 | 0.295 ± 0.013 | 0.295 ± 0.015 | **0.281 ± 0.011** |
 | In-domain | 0.491 | 0.492 | 0.480 | 0.488 | 0.480 |
 
 ### Per weather (official mAP@50, S5 → S5b)

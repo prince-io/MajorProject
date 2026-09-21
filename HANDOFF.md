@@ -145,8 +145,11 @@ and skips this step.
 | **T1aug** | ACDC + default aug — **ceiling** | **0.320** | 0.383 ± 0.021 | — |
 | **S1** | BDD + standard aug — **anchor** | **0.269** | 0.286 ± 0.014 | 0.491 |
 | S2 | BDD + photometric (offline) | 0.283 | 0.293 ± 0.016 | 0.492 |
-| S3 | BDD + simple weather (offline) | 0.274 | 0.295 ± 0.012 | 0.480 |
-| S5 | BDD + appearance calibration (offline) | **0.294** | 0.295 ± 0.013 | 0.488 |
+| S3 | BDD + simple weather (offline) | 0.274 | 0.295 ± 0.013 | 0.480 |
+| S5 | BDD + appearance calibration (offline) | **0.294** | 0.295 ± 0.015 | 0.488 |
+| S5b | S5 + calibrated blur (offline) | 0.276 | 0.281 ± 0.011 | 0.480 |
+
+5-fold values are mean ± sample std (n=5), as emitted by `aggregate.py`.
 
 ### Key findings (all in `PROJECT.md` §9)
 - **Augmentation, not target labels, is the lever.** T1 (labels, no aug) 0.254 ≈ S0 0.213;
@@ -286,7 +289,7 @@ scorer and is scored once per stage.
   frozen (append-only per experiment).** The S4 FDA hook (`src/aug/fda.py`) is still planned.
 - **S3 trained + evaluated (2026-09-20):** 80 epochs (best @65, no early stop), full S2-matched
   eval. **Official mAP@50 0.2741** (+0.0051 over S1) but **below S2 0.2833**; **5-fold
-  0.2947 ± 0.0119 ≈ S2 0.2933 ± 0.0144**; in-domain 0.4799 (−0.011). **Snow is the headline:**
+  0.2947 ± 0.0133 ≈ S2 0.2933 ± 0.0161**; in-domain 0.4799 (−0.011). **Snow is the headline:**
   best BDD-trained stage, 0.284→**0.300** official (~49% of the S1→ceiling snow gap; snow recall
   0.232→0.319); **rain 0.244→0.264**. Night (0.193→0.180) and fog (flat) fail; overall S3 is
   precision-heavy/recall-light. Reading: hand-set weather **ties S2 on 5-fold, below on
@@ -298,7 +301,7 @@ scorer and is scored once per stage.
   + `results/calibration/synth_stats.json` + `data/yolo/bdd_s5/`; `s5` registered in `stage_common`.
   Inspector PASS (byte-identical labels, 1,250/condition, condition parity with S3, closed-loop
   mean/std <~2), deterministic. **Result: official mAP@50 0.2939 — best BDD-trained stage**
-  (+0.0106 over S2, +0.0198 over S3), ~49% of the headroom; 5-fold 0.2951 (±0.0132) = S2/S3 tie;
+  (+0.0106 over S2, +0.0198 over S3), ~49% of the headroom; 5-fold 0.2951 (±0.0148) = S2/S3 tie;
   in-domain 0.4877. Gains in **rain 0.290 / night 0.199 / bus 0.255 / truck 0.321**; **fog regresses
   to 0.463**; recall 0.266→0.301. Write-up: `PROJECT.md` §9, `paper/results_notes.md`.
 - **S5b Tier 0 + Tier 1 done (2026-09-20):** ancillary one-factor over S5; order
