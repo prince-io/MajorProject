@@ -294,23 +294,62 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
 > (~0.295), and **fog regresses** (0.463), suggesting the global appearance transfer can hurt
 > conditions that were already near-target.
 
+## S5b — calibrated blur ablation (over S5)
+
+### Design
+S5b is the S5 recipe plus a pool-calibrated, condition-specific blur inserted **before** the
+appearance match (`weather.apply → blur → appearance_match`): rain = directional motion aligned to
+the streak slant, fog/snow = isotropic defocus, night = none. Blur strength was calibrated on the
+unlabeled ACDC-train pool by a forward curve built on the S5-rendered base (Tier 0: all gates PASS,
+closed-loop ≤0.021; fitted fog σ 0.00136 / rain length 0.00555 / snow σ 0.00075). S5b↔S5 is the
+only clean one-factor comparison (same A/B, same condition-per-source, seed 42, 80 epochs).
+
+### Results (official ACDC val, seed 42)
+
+| Metric | S1 | S2 | S3 | S5 | **S5b** |
+|---|---|---|---|---|---|
+| mAP@50 | 0.269 | 0.283 | 0.274 | **0.294** | 0.276 |
+| mAP@50-95 | 0.156 | 0.165 | 0.157 | 0.164 | 0.160 |
+| Precision | 0.461 | 0.434 | 0.532 | 0.461 | 0.535 |
+| Recall | 0.266 | 0.272 | 0.244 | 0.301 | 0.278 |
+| 5-fold mAP@50 | 0.286 ± 0.014 | 0.293 ± 0.016 | 0.295 ± 0.012 | 0.295 ± 0.013 | **0.281 ± 0.011** |
+| In-domain | 0.491 | 0.492 | 0.480 | 0.488 | 0.480 |
+
+### Per weather (official mAP@50, S5 → S5b)
+fog **0.463 → 0.476**, night 0.199 → 0.177, rain **0.290 → 0.265**, snow 0.299 → 0.298.
+
+### Per class (official mAP@50, S5 → S5b)
+**bus 0.255 → 0.188**, truck 0.321 → 0.310, person 0.275 → 0.258, rider 0.115 → 0.116,
+car 0.704 → 0.700, bicycle 0.093 → 0.084. Across the 5-fold split **every class drops** vs S5
+(truck −0.035, bus −0.027).
+
+### Interpretation
+- **Controlled negative.** S5b is below S5 on the official split (−0.018) and is the **weakest of
+  all augmented BDD stages on 5-fold** (0.281, below even S1's 0.286).
+- **The damage is exactly where S5 won.** S5's headline gain was recall (0.266 → 0.301)
+  concentrated in bus/truck; blur suppresses it (R → 0.278, a precision-heavy S3-like profile)
+  and reverses the bus gain (0.255 → 0.188).
+- **Only fog improves** (+0.013), recovering about half of S5's fog regression but still below
+  S1's 0.491.
+- **The Tier 1 screen over-predicted snow:** the design-split probe expected a snow benefit
+  (+0.030), which did not materialize (0.000) — a concrete demonstration that test-time
+  sensitivity is not training-time benefit.
+- **Conclusion:** global appearance calibration (S5), not sharpness/blur matching, is the
+  effective lever. Blur is excluded from S6a and S5 remains the base.
+
+### Paper-ready sentence
+> Adding a pool-calibrated, condition-specific blur to the appearance-calibrated synthesis (S5b)
+> does not help: it lowers the official mAP@50 from 0.294 to 0.276 and is the weakest augmented
+> stage across the 5-fold split (0.281), reversing S5's recall-driven bus/truck gains while giving
+> only a small fog recovery. This isolates **global appearance calibration, not sharpness
+> matching, as the effective ingredient** of S5.
+
 ## What's next
 
-- **S5b — calibrated blur ablation (Tier 0/1 done 2026-09-20; Tier 2 pending):** ancillary
-  one-factor over S5; `weather.apply → blur → appearance_match`; condition-specific blur (rain
-  directional motion, fog/snow defocus, night none) fitted to the ACDC-train pool by a
-  forward-curve sharpness estimator built on the S5 base (Tier 0 gate; closed-loop ≤0.021;
-  fitted fog σ 0.00136 / rain length 0.00555 / snow σ 0.00075). **Tier 1 design-split screen:**
-  test-time blur is ~flat for fog (peak +0.012 at the fitted strength), monotonically harmful
-  for rain (−0.051 at fitted), and beneficial for snow (+0.030 at fitted, +0.040 at 1.5×) — a
-  per-condition split, and a **screening heuristic only** (test-time sensitivity ≠ training-time
-  benefit). **Dataset built + inspected** (`data/yolo/bdd_s5b/`, 1,250/condition, labels
-  byte-identical, realized S5b/source fog 0.33 / rain 0.54 / snow 0.89 / night 1.00 ≈ targets);
-  **ready to train**. **S5b↔S5 is the clean comparison** (it is not folded into S5).
 - **S5 follow-ups:** investigate the **fog regression** (0.463) and whether the global appearance
   transfer should be softened; decide on a calibration sample-size ablation.
 - **S6a/S6b** — use S5 (best BDD-trained on official) as the natural base for the fixed combination
-  and the condition-aware policy.
+  and the condition-aware policy; **exclude blur** (S5b's only positive was a partial fog recovery).
 - **S4 FDA** online (`src/aug/fda.py` + hook); β chosen when we reach S4. S4↔S5 (same pool) is the
   controlled equal-access comparison.
 - Decide per the reviewer: S4 β set (restore 0.01?), seeds (3 for S1/S6).
@@ -322,7 +361,10 @@ the fog mAP loss is a precision drop (0.714 → 0.577) that outweighs its recall
 - `results/summary/{summary.json,per_class.csv,per_class.md}`.
 - S3 result figures: `class_weather_S3_acdc.png`, `results/experiments/S3/figures/{bars_S3_acdc_official,training_curves}.png`.
 - S5 result figures: `class_weather_S5_acdc.png`, `results/experiments/S5/figures/{bars_S5_acdc_official,training_curves}.png`.
+- S5b result figures: `class_weather_S5b_acdc.png`, `results/experiments/S5b/figures/{bars_S5b_acdc_official,training_curves}.png`.
+- S5b Tier 1 probe: `results/summary/blur_probe/{blur_probe.json,blur_probe_mAP50.png,blur_probe.txt}`.
 - `results/summary/figures/synth_preview_bdd_s2.png` (qualitative S2 samples).
 - `results/summary/figures/synth_preview_bdd_s3_{fog,rain,snow,night}.png` (qualitative S3 samples).
 - `results/summary/figures/synth_preview_bdd_s5_{fog,rain,snow,night}.png` (qualitative S5 samples).
-- `results/summary/synth_report_bdd_s3.txt`, `results/summary/synth_report_bdd_s5.txt` (inspector reports).
+- `results/summary/figures/synth_preview_bdd_s5b_{fog,rain,snow,night}.png` (qualitative S5b samples).
+- `results/summary/synth_report_bdd_s3.txt`, `results/summary/synth_report_bdd_s5.txt`, `synth_report_bdd_s5b.txt` (inspector reports).

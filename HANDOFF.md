@@ -23,8 +23,10 @@ locked; S2 is implemented, trained and evaluated (official mAP@50 0.2833 vs S1 0
 trained and evaluated (official 0.2741, 5-fold 0.2947 — ties S2 on 5-fold, best BDD-trained
 snow result, below S2 on the official split). S5 (appearance calibration) is trained+evaluated:
 official mAP@50 **0.2939** — best BDD-trained stage (~49% of headroom), 5-fold 0.2951 (tie with
-S2/S3), fog regresses. Next: **S5b Tier 2 go/no-go — Tier 0 calibration and Tier 1 design-split
-probe are done (fog flat, rain harmful, snow beneficial); decision pending**, then S6 design.**
+S2/S3), fog regresses. **S5b (S5 + calibrated blur) is trained+evaluated and is a controlled
+negative: official 0.2759 (below S5, near S3/S2), 5-fold 0.281 — the weakest augmented stage,
+below even S1; blur is not the lever, appearance calibration is.** Next: **S6 design (base = S5,
+blur excluded).**
 
 ---
 
@@ -91,9 +93,13 @@ probe are done (fog flat, rain harmful, snow beneficial); decision pending**, th
   closed-loop ≤0.021; fitted fog 0.00136 / rain 0.00555 / snow 0.00075. Tier 1 probe: fog flat,
   rain harmful, snow beneficial.** Blur is **not** folded into S5 (would confound S5↔S3). S5b is
   an **S5b-only sensor/sharpness-calibration exception**; **S5b↔S5 is the only clean comparison**.
-  Evidence: Tier 0 (`results/calibration/blur_stats.json`) → Tier 1 `src/analysis/blur_probe.py`
-  → tracked `results/summary/blur_probe/` (never val, never a stage row) → Tier 2 training only if
-  warranted (decision pending). Feeds S6a/S6b.
+  **Tier 2 trained + evaluated (2026-09-20): controlled negative** — official mAP@50 **0.2759 vs
+  S5 0.2939**; 5-fold **0.2808 ± 0.0114** (weakest augmented stage, below S1); in-domain 0.4802.
+  Per weather S5→S5b: fog +0.013, night −0.022, rain −0.025, snow flat. Per class: **bus
+  0.255→0.188**, truck 0.321→0.310; 5-fold every class down. **Conclusion: blur is not the lever;
+  S5 (appearance calibration) stays the S6a base and blur is excluded from S6a.** Evidence: Tier 0
+  (`results/calibration/blur_stats.json`) → Tier 1 `src/analysis/blur_probe.py` → Tier 2
+  (`results/experiments/S5b/`). Feeds S6a/S6b (blur excluded).
 - **S4 β:** **{0.05, 0.10}** (provisional — decide when S4 is built; review suggests restoring 0.01).
 - **Experiment grouping:** `--exp <ID>` → `results/experiments/<ID>/{train,eval,figures}`;
   `aggregate.py`/`visualize.py` scan the experiment tree.
@@ -170,7 +176,7 @@ training data/augmentation changes.
 | S3 | S1 + simple weather transforms (offline) | fast weather sim | **done** (0.2741; 5-fold 0.2947) |
 | S4 | S1 + FDA online, ACDC-train style (unlabeled) | appearance adaptation | planned |
 | S5 | S1 + calibrated appearance synthesis (S3 structure + target-appearance match) | target-appearance calib. | **done** (0.2939; 5-fold 0.2951) |
-| S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | dataset ready; training pending |
+| S5b | S5 + pool-calibrated condition-specific blur (ancillary) | blur ablation before S6 | **done** (0.2759; below S5) |
 | S6a | best fixed combination | combination | planned |
 | S6b | S6a + condition-aware selection | condition-aware policy | planned |
 | S6c | per-condition policy (optional) | custom policy | optional |
@@ -239,8 +245,10 @@ fitted fog 0.00136 / rain 0.00555 / snow 0.00075; ranges fog σ [0.001,0.012], r
 **Tier 1 evaluate the trained S5 model on the 400 design split** with test-time blur via
 `src/analysis/blur_probe.py`, written to tracked `results/summary/blur_probe/` (never val, never
 a stage row) — **probe result: fog ~flat (peak +0.012 at fitted), rain monotonically harmful
-(−0.051 at fitted), snow beneficial (+0.030 at fitted, peak +0.040 at 1.5×)**; Tier 2 train only
-if warranted (decision pending). `S5b↔S5` is the only clean comparison. Feeds S6a/S6b.
+(−0.051 at fitted), snow beneficial (+0.030 at fitted, peak +0.040 at 1.5×)**. **Tier 2 trained +
+evaluated (controlled negative): official mAP@50 0.2759 vs S5 0.2939; 5-fold 0.2808 ± 0.0114
+(weakest augmented stage, below S1); per-class bus 0.255→0.188.** `S5b↔S5` is the only clean
+comparison. Blur excluded from S6a. Feeds S6a/S6b (blur excluded).
 
 **S4 (FDA).** Reference `low_freq_mutate` [Yang & Soatto, CVPR 2020], online; target pool =
 `splits/acdc_pool_unlabeled.txt`; β ∈ **{0.05, 0.10}**; headline = best β.
@@ -306,7 +314,11 @@ scorer and is scored once per stage.
   **Dataset built + inspected (2026-09-20):** `data/yolo/bdd_s5b/` (5,000 blurred + 5,000 clear
   referenced), manifest 10,000, conditions 1,250 each, `configs/bdd_s5b.yaml`; inspector PASS
   (labels byte-identical, condition parity with S3, realized S5b/source fog 0.33 / rain 0.54 /
-  snow 0.89 / night 1.00 ≈ targets). **Ready to train (Tier 2).**
+  snow 0.89 / night 1.00 ≈ targets). **Tier 2 trained + evaluated: controlled negative** — official
+  mAP@50 **0.2759 vs S5 0.2939**, 5-fold **0.2808 ± 0.0114** (weakest augmented stage, below S1),
+  in-domain 0.4802; per weather S5→S5b fog +0.013, night −0.022, rain −0.025, snow flat; per class
+  bus 0.255→0.188, truck 0.321→0.310, 5-fold every class down. **Blur is not the lever; S5 remains
+  the S6a base and blur is excluded from S6a.** Write-up: `PROJECT.md` §9, `paper/results_notes.md`.
 - **`.gitignore` corrected (2026-09-17):** the earlier `data/` and `datasets/` patterns had
   hidden `src/data/` (all pipeline code) and the dataset `AGENTS.md` files from git. They are
   now tracked; only `/data/` and the heavy dataset subtrees are ignored.
@@ -349,11 +361,11 @@ scorer and is scored once per stage.
    `inspect_s5.py` PASS (condition parity with S3, closed-loop mean/std <~2); deterministic.
 8. ~~**S5 train + eval**~~ — **done 2026-09-20** (official mAP@50 0.2939 best BDD-trained, 5-fold
    0.2951 tie, in-domain 0.4877; rain/night/bus/truck gains, fog regression; write-up done).
-9. **S5b (Tier 0/1 done + dataset built 2026-09-20):** **train + eval (Tier 2)** is the next step
-   — dataset `data/yolo/bdd_s5b/` and `configs/bdd_s5b.yaml` are ready. Train 80 epochs
-   `--exp S5b`, then the full S2-matched eval (official + 5-fold + in-domain); commands in §9.
-   Feeds S6a/S6b. Also: investigate the S5 **fog regression** and whether the appearance transfer
-   should be softened.
+9. ~~**S5b train + eval (Tier 2)**~~ — **done 2026-09-20: controlled negative** (official mAP@50
+   0.2759 vs S5 0.2939; 5-fold 0.2808 ± 0.0114, weakest augmented stage; per-class bus 0.255→0.188;
+   blur is not the lever). **Next: S6 design** — S6a = best fixed combination of S2–S5 with **S5 as
+   base and blur excluded**; S6b = condition-aware selection/weighting (target the S5 fog
+   regression, 0.463). Also: whether the appearance transfer should be softened (S5 open item).
 10. Later: S6a/S6b, S4 FDA online (`src/aug/fda.py`), S6c, ratio ablations, supervised fine-tune, LOO, paper.
 
 ---
@@ -487,11 +499,12 @@ python src/aggregate.py && python src/visualize.py
 - **S5 open items:** (a) resolved (best BDD-trained on official, tie on 5-fold); (b) investigate the
   **fog regression** (0.463) and whether the appearance transfer should be softened; (c) calibration
   sample-size ablation.
-- **S5b open item:** whether **Tier 2** (training the blur arm) is warranted. Tier 0 and Tier 1
-  are complete and recorded (Project §5/§10); the probe shows a **mixed per-condition** signal
-  (fog flat, rain harmful, snow beneficial), and because S5b is a single all-condition arm the
-  decision is deferred to the user. Note the probe measures **test-time** sensitivity, which is
-  not the same as **training-time** benefit.
+- **S5b — closed (controlled negative, no open items):** Tier 2 was run; S5b is below S5 on the
+  official split and the weakest augmented stage on 5-fold, so blur is excluded from S6. The Tier 1
+  probe's snow prediction did not materialize — a recorded reminder that test-time sensitivity is
+  not training-time benefit.
+- **S6 (next):** S6a = best fixed combination of S2–S5 (base S5, **no blur**); S6b = condition-aware
+  selection/weighting; the S5 **fog regression** (0.463) is the clearest condition-specific target.
 - **Class-weighting sensitivity (macro vs micro) — future option:** mAP is a macro mean, so rare
   classes dominate the headline; dropping `bicycle` lifts every run by ~+0.02–0.04 without changing
   the ranking. Keep macro mAP primary; add micro/class-subset only as a labeled secondary metric.
